@@ -3,25 +3,30 @@ name: Deploy To EC2
 # Controls when the workflow will run
 on:
   # Triggers the workflow on push or pull request events but only for the "main" branch
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+ # push:
+  #  branches: [ "main" ]
+  #pull_request:
+   # branches: [ "main" ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
-
+  
+permissions:
+  id-token: write #Write permission required to authenticate with OIDC
+  
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
+  ConnectToEC2:
     runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
+    
     steps:
-      # Connects to EC2 instance
-      - uses: actions/checkout@v4
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@main 
         with:
-          repository: echancrure/Sikraken 
-          ref: dev
+          role-to-assume: arn:aws:iam::aws:policy/AmazonEC2FullAccess
+          aws-region: eu-west-1
+      - name: Start EC2
+        uses: flyweightrocks/aws-ec2-action@v1
+        with:
+          instance-id: i-0278ae4c0ea327fb9
+          wait-instance-running: true
