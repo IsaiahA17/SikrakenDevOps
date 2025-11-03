@@ -31,3 +31,7 @@ jobs:
           instance-id: i-0278ae4c0ea327fb9
           wait-instance-running: true
           stop-instance: false
+      - name: Run Commands
+        run: |
+          mkdir testfolder
+      
