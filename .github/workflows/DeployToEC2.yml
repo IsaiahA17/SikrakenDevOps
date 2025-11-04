@@ -36,6 +36,6 @@ jobs:
           aws ssm start-session --target ${{ secrets.EC2_INSTANCE_ID }} --document-name 'AWS-StartNonInteractiveCommand'
           aws ssm send-command \
           --document-name "AWS-RunShellScript" \
-          --parameters 'commands=["mkdir testFolder"]' \
+          --parameters commands=["mkdir testFolder"] \
           --targets "Key=instanceids,Values=${{ secrets.EC2_INSTANCE_ID }}" \
               
