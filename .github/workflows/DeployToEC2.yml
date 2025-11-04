@@ -33,7 +33,7 @@ jobs:
           stop-instance: false
       - name: Run Commands
         run: |
-          aws ssm start-session --target ${{ secrets.AWS_INSTANCE_ID }} 
+          aws ssm start-session --target ${{ secrets.EC2_INSTANCE_ID }} 
           --document-name AWS-StartNonInteractiveCommand 
           --parameters '{"command": ["mkdir testfolder"]}'
       
