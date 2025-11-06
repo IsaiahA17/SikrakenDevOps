@@ -23,12 +23,12 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@main 
         with:
-          role-to-assume: arn:aws:iam::713141626063:role/GitHub-Actions-EC2-Access
+          role-to-assume: ${{ secrets.EC2_ACCESS_ROLE_ARN }}
           aws-region: eu-west-1
       - name: Start EC2
         uses: flyweightrocks/aws-ec2-action@v1
         with:
-          instance-id: i-0278ae4c0ea327fb9
+          instance-id: ${{ secrets.EC2_INSTANCE_ID }}
           wait-instance-running: true
           stop-instance: false
       - name: Run Commands
