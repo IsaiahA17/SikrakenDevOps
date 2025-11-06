@@ -33,6 +33,6 @@ jobs:
           stop-instance: false
       - name: Run Commands
         run: |
-          cd /home/ubuntu
-          mkdir testfolder
+          aws ssm start-session --target ${{ secrets.EC2_INSTANCE_ID }} --document-name 'AWS-StartInteractiveCommand'
+          aws ssm send-command --document-name "AWS-RunShellScript" --parameters 'commands=["mkdir testFolder"]' --targets "Key=instanceids,Values=${{ secrets.EC2_INSTANCE_ID }}"
               
