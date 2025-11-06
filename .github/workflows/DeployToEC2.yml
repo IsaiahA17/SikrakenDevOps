@@ -34,4 +34,9 @@ jobs:
       - name: Run Commands
         run: |
           aws ssm send-command --document-name "AWS-RunShellScript" --parameters 'commands=["cd /home/ubuntu","mkdir testFolder"]' --targets "Key=instanceids,Values=${{ secrets.EC2_INSTANCE_ID }}"
-              
+      - name: Start EC2
+        uses: flyweightrocks/aws-ec2-action@v1
+        with:
+          instance-id: ${{ secrets.EC2_INSTANCE_ID }}
+          wait-instance-running: false
+          stop-instance: true
