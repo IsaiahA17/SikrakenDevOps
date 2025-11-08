@@ -33,7 +33,20 @@ jobs:
           stop-instance: false
       - name: Run Commands
         run: |
-          aws ssm send-command --document-name "AWS-RunShellScript" --parameters 'commands=["cd /home/ubuntu/Sikraken","git pull","./bin/sikraken.sh release budget[1] -m32 SampleCode/simple_if.c", "zip -r /home/ubuntu/Sikraken/sikraken_output/simple_if/test-suite/test-suite.zip /home/ubuntu/Sikraken/sikraken_output/simple_if/test-suite", "cd /home/ubuntu/test-suite-validator/myenv", "source bin/activate", "cd /home/ubuntu/test-suite-validator/bin","python testcov --no-isolation -32 --test-suite /home/ubuntu/Sikraken/sikraken_output/simple_if/test-suite/test-suite.zip /home/ubuntu/Sikraken/SampleCode/simple_if.c", "cd /home/ubuntu/test-suite-validator/bin/output", "aws s3 cp results.json s3://testcov-results-bucket/Results/"]' --targets "Key=instanceids,Values=${{ secrets.EC2_INSTANCE_ID }}"
+          aws ssm send-command --document-name "AWS-RunShellScript" 
+          --parameters 'commands=["cd /home/ubuntu/Sikraken","git pull","./bin/sikraken.sh release budget[1] -m32 SampleCode/simple_if.c", 
+          "zip -r /home/ubuntu/Sikraken/sikraken_output/simple_if/test-suite/test-suite.zip /home/ubuntu/Sikraken/sikraken_output/simple_if/test-suite", 
+          "cd /home/ubuntu/test-suite-validator/myenv", "source bin/activate",
+          "cd /home/ubuntu/test-suite-validator/bin","python testcov --no-isolation -32 --test-suite /home/ubuntu/Sikraken/sikraken_output/simple_if/test-suite/test-suite.zip /home/ubuntu/Sikraken/SampleCode/simple_if.c",
+          "cd /home/ubuntu/test-suite-validator/bin/output",
+          "aws s3 cp results.json s3://testcov-results-bucket/Results/"]' 
+          --targets "Key=instanceids,Values=${{ secrets.EC2_INSTANCE_ID }}"
+      - name: Invoke Lambda Function For Processing
+        run: |
+          aws lambda invoke --function-name TestCovResultsProcessor \
+          --cli-binary-format raw-in-base64-out \
+          --payload '{ }' response.json
+          
       #- name: Stop EC2 #Keeping this commented for further testing to check the results of the pipeline commands
        # uses: flyweightrocks/aws-ec2-action@v1
         #with:
