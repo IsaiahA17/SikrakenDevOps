@@ -55,8 +55,9 @@ def generate_report(input_dir):
 
     for line in benchmark_lines:
         file_path = line.strip()
+        file_path = re.sub(r'\s+-\d+$', '', file_path) #Removing whitespace before hyphen, followed by digits at end of file path as -32 used to be printed out
         benchmark_name = os.path.basename(file_path) #Getting the final part of the file path (name of file and extension)
-        benchmark_base = os.path.splitext(benchmark_name)[0] #Splitting name and extension from each other and getting just the name ith [0]
+        benchmark_base = os.path.splitext(benchmark_name)[0] #Splitting name and extension from each other and getting just the name with [0]
         
         benchmark_dir = os.path.join(input_dir, benchmark_base) #joining input directory path and name to get the directory of the benchmark 
         
