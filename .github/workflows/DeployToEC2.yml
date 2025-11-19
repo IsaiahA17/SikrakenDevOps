@@ -48,7 +48,7 @@ jobs:
           --cli-binary-format raw-in-base64-out \
           --payload '{ }' response.json
 
-          cat response.json
+          echo "jq -r '.url' response.json" #Using the jq JSON command line processor to isolate the value of the url key
           
       - name: Stop EC2 #Keeping this commented for further testing to check the results of the pipeline commands
         uses: flyweightrocks/aws-ec2-action@v1
