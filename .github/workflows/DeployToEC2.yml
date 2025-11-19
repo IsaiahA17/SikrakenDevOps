@@ -47,6 +47,8 @@ jobs:
           aws lambda invoke --function-name ${{ secrets.LAMBDA_NAME }} \
           --cli-binary-format raw-in-base64-out \
           --payload '{ }' response.json
+
+          cat response.json
           
       - name: Stop EC2 #Keeping this commented for further testing to check the results of the pipeline commands
         uses: flyweightrocks/aws-ec2-action@v1
