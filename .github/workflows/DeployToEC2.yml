@@ -35,7 +35,8 @@ jobs:
         run: | #Maybe Place Commands in Bash Script instead to make this neater
           command_id=$(aws ssm send-command \
             --document-name "AWS-RunShellScript" \
-            --parameters 'commands=["cd /home/ubuntu/Sikraken", "git pull", "./home/ubuntu/run_eca_categories.sh"]' \
+            #--parameters 'commands=["cd /home/ubuntu/Sikraken", "git pull", "./home/ubuntu/run_eca_categories.sh"]' \
+            --parameters 'commands=["cd /home/ubuntu/Sikraken"]' \
             --targets "Key=instanceIds,Values=${{ secrets.EC2_INSTANCE_ID }}" \
             --query "Command.CommandId" \
             --output text)
