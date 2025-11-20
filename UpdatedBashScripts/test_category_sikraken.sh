@@ -203,7 +203,7 @@ generate_tests_and_call_testcov() {
     # Generate test inputs
     local eclipse_call="$SIKRAKEN_INSTALL_DIR/eclipse/bin/x86_64_linux/eclipse -f $SIKRAKEN_INSTALL_DIR/SymbolicExecutor/se_main.pl -e \"se_main(['$SIKRAKEN_INSTALL_DIR', '${SIKRAKEN_INSTALL_DIR}/${rel_path_c_file}', '$basename', main, $mode, testcomp, '$gcc_flag', budget($budget) $shortcutgen])\" -g $stack_size_value -l 1G"
     local sikraken_log="$benchmark_output_dir/sikraken.log" 
-    local timeout_duration=1
+    local timeout_duration=60
     eval timeout $timeout_duration $eclipse_call  >> $sikraken_log 2>&1
     timeout_status=$?
 
