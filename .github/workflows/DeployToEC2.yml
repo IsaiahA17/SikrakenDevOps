@@ -33,28 +33,35 @@ jobs:
           stop-instance: false
       - name: Run Commands
         run: | #Maybe Place Commands in Bash Script instead to make this neater
-          aws ssm send-command --document-name "AWS-RunShellScript" --parameters 'commands=[
-          "cd /home/ubuntu/Sikraken",
-          "git pull",
-          "./home/ubuntu/run_eca_categories.sh"]' --targets "Key=instanceids",--query "Command.CommandId",Values=${{ secrets.EC2_INSTANCE_ID }}"
-
-          while true; do #Getting the status of the command and waiting until it finishes depending on the status
-          status=$(aws ssm list-command-invocations \
-            --command-id "$command_id" \
-            --query "CommandInvocations[0].Status" \
+          command_id=$(aws ssm send-command \
+            --document-name "AWS-RunShellScript" \
+            --parameters 'commands=["cd /home/ubuntu/Sikraken", "git pull", "./home/ubuntu/run_eca_categories.sh"]' \
+            --targets "Key=instanceIds,Values=${{ secrets.EC2_INSTANCE_ID }}" \
+            --query "Command.CommandId" \
             --output text)
-        
-          echo "Current command status: $status"
-        
-          # Exit the loop if the command has completed (Success, Failed, TimedOut)
-          if [[ "$status" == "Success" || "$status" == "Failed" || "$status" == "TimedOut" ]]; then
-            echo "Command completed with status: $status"
-            break
-          fi
-        
-          # Wait for 10 seconds before checking again
-          sleep 120
+          
+          echo "Command sent with Command ID: $command_id"
+          
+          # Poll for the command status until it completes
+          while true; do
+            # Get the current status of the command
+            status=$(aws ssm list-command-invocations \
+              --command-id "$command_id" \
+              --query "CommandInvocations[0].Status" \
+              --output text)
+          
+            echo "Current command status: $status"
+          
+            # Exit the loop if the command has completed (Success, Failed, TimedOut)
+            if [[ "$status" == "Success" || "$status" == "Failed" || "$status" == "TimedOut" ]]; then
+              echo "Command completed with status: $status"
+              break
+            fi
+          
+            # Wait for 120 seconds before checking again
+            sleep 120
           done
+
       - name: Invoke Lambda Function For Processing
         run: |
           aws lambda invoke --function-name ${{ secrets.LAMBDA_NAME }} \
