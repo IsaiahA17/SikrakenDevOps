@@ -33,15 +33,10 @@ jobs:
           stop-instance: false
       - name: Run Commands
         run: | #Maybe Place Commands in Bash Script instead to make this neater
-          #aws ssm send-command --document-name "AWS-RunShellScript" --parameters 'commands=["cd /home/ubuntu/Sikraken",
-          #"git pull",
-          #""/home/ubuntu/Sikraken/SikrakenDevSpace/bin/test_category_sikraken.sh" "cd /home/ubuntu/PipelineScripts/SikrakenDevSpace/categories/ECA" ECA 4 10 debug -no_testcov", 
-          #"cd /home/ubuntu/PipelineScripts/SikrakenDevSpace/categories/ECA", 
-          #"cd /home/ubuntu/test-suite-validator/myenv", 
-          #"aws s3 sync "$recent_ECA_folder" "s3://testcov-results-bucket/$recent_ECA_folder"
-          #"python testcov --no-isolation -32 --test-suite /home/ubuntu/Sikraken/sikraken_output/simple_if/test-suite/test-suite.zip /home/ubuntu/Sikraken/SampleCode/simple_if.c",
-          #"cd /home/ubuntu/test-suite-validator/bin/output",
-          #"aws s3 cp results.json s3://testcov-results-bucket/Results/"]' --targets "Key=instanceids,Values=${{ secrets.EC2_INSTANCE_ID }}"
+          aws ssm send-command --document-name "AWS-RunShellScript" --parameters 'commands=[
+          "cd /home/ubuntu/Sikraken",
+          "git pull",
+          "./home/ubuntu/run_eca_categories.sh"]' --targets "Key=instanceids,Values=${{ secrets.EC2_INSTANCE_ID }}"
       - name: Invoke Lambda Function For Processing
         run: |
           aws lambda invoke --function-name ${{ secrets.LAMBDA_NAME }} \
