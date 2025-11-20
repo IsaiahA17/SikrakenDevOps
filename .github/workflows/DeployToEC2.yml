@@ -36,7 +36,7 @@ jobs:
           aws ssm send-command --document-name "AWS-RunShellScript" --parameters 'commands=[
           "cd /home/ubuntu/Sikraken",
           "git pull",
-          "./home/ubuntu/run_eca_categories.sh"]' --targets "Key=instanceids,--query "Command.CommandId",Values=${{ secrets.EC2_INSTANCE_ID }}"
+          "./home/ubuntu/run_eca_categories.sh"]' --targets "Key=instanceids",--query "Command.CommandId",Values=${{ secrets.EC2_INSTANCE_ID }}"
 
           while true; do #Getting the status of the command and waiting until it finishes depending on the status
           status=$(aws ssm list-command-invocations \
