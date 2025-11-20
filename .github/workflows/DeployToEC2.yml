@@ -35,12 +35,19 @@ jobs:
         run: | #Maybe Place Commands in Bash Script instead to make this neater
           command_id=$(aws ssm send-command \
             --document-name "AWS-RunShellScript" \
-            #--parameters 'commands=["cd /home/ubuntu/Sikraken", "git pull", "./home/ubuntu/run_eca_categories.sh"]' \
-            --parameters 'commands=["cd /home/ubuntu/Sikraken"]' \
+            --parameters 'commands=["cd /home/ubuntu/Sikraken", "git pull", "./home/ubuntu/run_eca_categories.sh"]' \
             --targets "Key=instanceIds,Values=${{ secrets.EC2_INSTANCE_ID }}" \
             --query "Command.CommandId" \
             --output text)
-          
+            
+          if [[ "$status" == "Failed" ]]; then
+              error_message=$(aws ssm list-command-invocations \
+                --command-id "$command_id" \
+                --query "CommandInvocations[0].CommandPlugins[0].ErrorMessage" \
+                --output text)
+              echo "Error message: $error_message"
+              break
+            fi
           echo "Command sent with Command ID: $command_id"
           
           # Poll for the command status until it completes
