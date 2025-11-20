@@ -39,17 +39,7 @@ jobs:
             --targets "Key=instanceIds,Values=${{ secrets.EC2_INSTANCE_ID }}" \
             --query "Command.CommandId" \
             --output text)
-            
-          if [[ "$status" == "Failed" ]]; then
-              error_message=$(aws ssm list-command-invocations \
-                --command-id "$command_id" \
-                --query "CommandInvocations[0].CommandPlugins[0].ErrorMessage" \
-                --output text)
-              echo "Error message: $error_message"
-              break
-            fi
-          echo "Command sent with Command ID: $command_id"
-          
+     
           # Poll for the command status until it completes
           while true; do
             # Get the current status of the command
@@ -58,7 +48,17 @@ jobs:
               --query "CommandInvocations[0].Status" \
               --output text)
           
-            echo "Current command status: $status"
+          echo "Current command status: $status"
+
+           if [[ "$status" == "Failed" ]]; then
+            error_message=$(aws ssm list-command-invocations \
+              --command-id "$command_id" \
+              --query "CommandInvocations[0].CommandPlugins[0].ErrorMessage" \
+              --output text)
+            echo "Error message: $error_message"
+            break
+          fi
+          echo "Command sent with Command ID: $command_id"
           
             # Exit the loop if the command has completed (Success, Failed, TimedOut)
             if [[ "$status" == "Success" || "$status" == "Failed" || "$status" == "TimedOut" ]]; then
