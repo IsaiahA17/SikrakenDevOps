@@ -79,9 +79,9 @@ jobs:
           URL=$(jq -r '.body | fromjson | .url' response.json) #Using the jq JSON command line processor to isolate the value of the url key
           echo "$URL" | awk -F '?' '{print $1}' #Using the text processor awk to try and remove the unnecessary parts of the html url
           
-      - name: Stop EC2 #Keeping this commented for further testing to check the results of the pipeline commands
-        uses: flyweightrocks/aws-ec2-action@v1
-        with:
-          instance-id: ${{ secrets.EC2_INSTANCE_ID }}
-          wait-instance-running: false
-          stop-instance: true
+      #- name: Stop EC2 #Keeping this commented for further testing to check the results of the pipeline commands
+      #uses: flyweightrocks/aws-ec2-action@v1
+    #    with:
+     #     instance-id: ${{ secrets.EC2_INSTANCE_ID }}
+      #    wait-instance-running: false
+       #   stop-instance: true
