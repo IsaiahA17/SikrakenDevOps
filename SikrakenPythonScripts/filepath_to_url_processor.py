@@ -7,15 +7,18 @@ from pathlib import Path
 s3_url = 'https://testcov-results-bucket.s3.eu-west-1.amazonaws.com'
 
 def replace_local_paths_with_s3(html_content):
-    # Regex explanation:
-    # href="  → match start of URL
-    # [^"]*? → non-greedy match of anything until...
-    # (\d{4}_\d{2}_\d{2}_\d{2}_\d{2}) → capture folder beginning with a YYYY_MM_DD_HH_MM pattern
-    # /(.+?) → capture the rest of the path
-    pattern = r'href="[^"]*?(\d{4}_\d{2}_\d{2}_\d{2}_\d{2}/.+?)"'
+    pattern = r'href="(?!https?://)([^"]+)"'
 
     def repl(match):
-        path = match.group(1)  
+        path = match.group(1)
+
+        # Remove file:// prefix
+        if path.startswith("file://"):
+            path = path.replace("file://", "", 1)
+
+        # Normalize leading slashes so we don't get double slashes in the final link
+        path = path.lstrip("/")
+
         return f'href="{s3_url}/{path}"'
 
     return re.sub(pattern, repl, html_content)
