@@ -70,6 +70,11 @@ jobs:
             # Wait for 120 seconds before checking again
             sleep 120
           done
+          
+      - name: Stop EC2 #Keeping this commented for further testing to check the results of the pipeline commands
+        run: |
+           aws ec2 stop-instances \
+            --instance-ids ${{ secrets.EC2_INSTANCE_ID }}
 
       - name: Invoke Lambda Function For Processing
         run: |
@@ -79,8 +84,3 @@ jobs:
 
           URL=$(jq -r '.body | fromjson | .url' response.json) #Using the jq JSON command line processor to isolate the value of the url key
           echo "$URL" | awk -F '?' '{print $1}' #Using the text processor awk to try and remove the unnecessary parts of the html url
-          
-      - name: Stop EC2 #Keeping this commented for further testing to check the results of the pipeline commands
-        run: |
-           aws ec2 stop-instances \
-            --instance-ids ${{ secrets.EC2_INSTANCE_ID }}
