@@ -29,7 +29,7 @@ jobs:
         run: | 
           aws ec2 start-instances --instance-ids ${{ secrets.EC2_INSTANCE_ID }}
       - name: Wait For EC2 To Run
-        run: 
+        run: | 
           aws ec2 wait instance-running \
           --instance-ids ${{ secrets.EC2_INSTANCE_ID }}
       - name: Run Commands
