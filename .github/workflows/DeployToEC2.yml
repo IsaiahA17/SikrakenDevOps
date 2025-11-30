@@ -25,37 +25,41 @@ jobs:
         with:
           role-to-assume: ${{ secrets.EC2_ACCESS_ROLE_ARN }}
           aws-region: eu-west-1
-          
       - name: Start EC2
         run: | 
           aws ec2 start-instances --instance-ids ${{ secrets.EC2_INSTANCE_ID }}
-
       - name: Wait For EC2 To Run
         run: | 
           aws ec2 wait instance-running \
           --instance-ids ${{ secrets.EC2_INSTANCE_ID }}
-
-      - name: Test SSM user
+      - name: Run Commands as ubuntu
         run: |
           command_id=$(aws ssm send-command \
             --document-name "AWS-RunShellScript" \
-            --parameters "commands=[\"echo Running as:\", \"whoami\", \"id\", \"pwd\"]" \
+            --parameters "commands=[
+              \"sudo -u ubuntu bash -lc 'cd /home/ubuntu/Sikraken && git pull && /home/ubuntu/run_eca_categories.sh ${{ vars.CATEGORY }} ${{ vars.CORE_COUNT }} ${{ vars.TIME_BUDGET }} ${{ vars.DEBUG_MODE }} ${{ vars.TESTCOV_SETTING }} ${{ vars.STACK_SIZE }}'\"
+            ]" \
             --targets "Key=instanceIds,Values=${{ secrets.EC2_INSTANCE_ID }}" \
             --query "Command.CommandId" \
             --output text)
 
-          # Wait for it
+          # Wait for completion
           while true; do
             status=$(aws ssm list-command-invocations \
               --command-id "$command_id" \
               --query "CommandInvocations[0].Status" \
               --output text)
 
-            if [[ "$status" != "InProgress" ]]; then break; fi
-            sleep 3
+            echo "Current command status: $status"
+
+            if [[ "$status" == "Success" || "$status" == "Failed" || "$status" == "TimedOut" ]]; then
+              break
+            fi
+
+            sleep 10
           done
 
-          # Print SSM output
+          # Print SSM output for debugging
           aws ssm list-command-invocations \
             --command-id "$command_id" \
             --details \
