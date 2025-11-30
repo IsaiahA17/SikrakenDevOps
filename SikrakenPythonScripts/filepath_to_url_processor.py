@@ -7,7 +7,7 @@ from pathlib import Path
 s3_url = 'https://testcov-results-bucket.s3.eu-west-1.amazonaws.com'
 
 def replace_local_paths_with_s3(html_content, run_folder):
-    run_folder = run_folder.rstrip("/")  #Removing forward slash at end of file
+    run_folder = run_folder.rstrip("/")  #Removing forward slash at end of folder name 
 
     pattern = r'href="(?!https?://)([^"]+)"' #Regex for detecting href and doesn't already contain https
 
@@ -15,17 +15,17 @@ def replace_local_paths_with_s3(html_content, run_folder):
         path = match.group(1) #Using first match 
 
         if path.startswith("file://"):
-            path = path.replace("file://", "", 1)
+            path = path.replace("file://", "", 1) #ELiminating the file path
 
         path = os.path.normpath(path) #Eliminate double slashes in path if any
-        p = Path(path) #Turns into Path object that has methods to perform operations on it
+        p = Path(path) #Turns into Path object that has methods to perform operations on it 
         filename = p.name #Getting file name
         problem_folder = p.parent.name #Getting parent folder name to match object format in S3
 
         relative_path = f"{run_folder}/{problem_folder}/{filename}" #Combining the name e.g 2025_11_17_19_00/Problem03_label00/Problem03_label00.i
         return f'href="{s3_url}/{relative_path}"' #Adding to S3 url
 
-    return re.sub(pattern, repl, html_content)
+    return re.sub(pattern, repl, html_content) #Scans for the pattern in html_content and then calls repl to process the filepath with each pattern found
 
 def process_html_file(input_dir, run_folder):
     input_dir_path = Path(input_dir)
@@ -55,7 +55,7 @@ def process_html_file(input_dir, run_folder):
 def main():
     parser = argparse.ArgumentParser(description="Generate a report from test logs.") #Getting Arguments
     parser.add_argument('input_dir', type=str, help="Path to the input directory") #Requiring input directory (ECA Category Folder)
-    parser.add_argument('--run_folder', type=str, required=True, help="Run folder name to use in S3 URLs")
+    parser.add_argument('--run_folder', type=str, required=True, help="Run folder name to use in S3 URLs") #Sets the folder name that will be used in the S3 bucket
 
     args = parser.parse_args()
     result = process_html_file(args.input_dir, args.run_folder)
