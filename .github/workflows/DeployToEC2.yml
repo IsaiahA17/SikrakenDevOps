@@ -70,7 +70,7 @@ jobs:
       - name: Invoke Lambda Function For Processing #Invokes Lambda using name
         run: |
           aws lambda invoke --function-name ${{ secrets.LAMBDA_NAME }} \
-          --cli-binary-format raw-in-base64-out \ # requires payload format that will be read into the lambda to be specified
+          --cli-binary-format raw-in-base64-out \#requires payload format that will be read into the lambda to be specified
           --payload '{ }' response.json
           URL=$(jq -r '.body | fromjson | .url' response.json) #Using the jq JSON command line processor to isolate the value of the url key
           echo "$URL" | awk -F '?' '{print $1}' #Using the text processor awk to try and remove the unnecessary parts of the html url
