@@ -26,22 +26,21 @@ jobs:
           role-to-assume: ${{ secrets.EC2_ACCESS_ROLE_ARN }}
           aws-region: eu-west-1
       - name: Start EC2
-        run: | 
-          aws ec2 start-instances --instance-ids ${{ secrets.EC2_INSTANCE_ID }}
-      - name: Wait For EC2 To Run
-        run: | 
-          aws ec2 wait instance-running \
-          --instance-ids ${{ secrets.EC2_INSTANCE_ID }}
+        uses: flyweightrocks/aws-ec2-action@v1
+        with:
+          instance-id: ${{ secrets.EC2_INSTANCE_ID }}
+          wait-instance-running: true
+          stop-instance: false
       - name: Run Commands
-        run: | 
+        run: | #Maybe Place Commands in Bash Script instead to make this neater
           command_id=$(aws ssm send-command \
             --document-name "AWS-RunShellScript" \
-            --parameters "commands=[\"cd /home/ubuntu/Sikraken\", \"git pull\", \"/home/ubuntu/run_eca_categories.sh ${{ vars.CATEGORY }} ${{ vars.CORE_COUNT }} ${{ vars.TIME_BUDGET }} ${{ vars.DEBUG_MODE }} ${{ vars.TESTCOV_SETTING }} ${{ vars.STACK_SIZE }}\"]" \
+            --parameters 'commands=["cd /home/ubuntu/Sikraken", "git pull", "/home/ubuntu/run_eca_categories.sh"]' \
             --targets "Key=instanceIds,Values=${{ secrets.EC2_INSTANCE_ID }}" \
             --query "Command.CommandId" \
             --output text)
      
-          # Poll for the command status until it completes, this will cause the pipeline to wait until the script is actually finished running instead of moving ahead
+          # Poll for the command status until it completes
           while true; do
             # Get the current status of the command
             status=$(aws ssm list-command-invocations \
@@ -51,7 +50,7 @@ jobs:
           
           echo "Current command status: $status"
 
-           if [[ "$status" == "Failed" ]]; then # Break out of the loop if status is failed and also return the error message
+           if [[ "$status" == "Failed" ]]; then
             error_message=$(aws ssm list-command-invocations \
               --command-id "$command_id" \
               --query "CommandInvocations[0].CommandPlugins[0].ErrorMessage" \
@@ -61,8 +60,8 @@ jobs:
           fi
           echo "Command sent with Command ID: $command_id"
           
-            # Exit the loop if the command has completed (Success, Failed, TimedOut) # Break out of the loop if the status is 
-            if [[ "$status" == "Success" || "$status" == "TimedOut" ]]; then
+            # Exit the loop if the command has completed (Success, Failed, TimedOut)
+            if [[ "$status" == "Success" || "$status" == "Failed" || "$status" == "TimedOut" ]]; then
               echo "Command completed with status: $status"
               break
             fi
@@ -79,9 +78,10 @@ jobs:
 
           URL=$(jq -r '.body | fromjson | .url' response.json) #Using the jq JSON command line processor to isolate the value of the url key
           echo "$URL" | awk -F '?' '{print $1}' #Using the text processor awk to try and remove the unnecessary parts of the html url
-
-                
+          
       - name: Stop EC2 #Keeping this commented for further testing to check the results of the pipeline commands
-        run: |
-           aws ec2 stop-instances \
-            --instance-ids ${{ secrets.EC2_INSTANCE_ID }}
+        uses: flyweightrocks/aws-ec2-action@v1
+        with:
+          instance-id: ${{ secrets.EC2_INSTANCE_ID }}
+          wait-instance-running: false
+          stop-instance: true
