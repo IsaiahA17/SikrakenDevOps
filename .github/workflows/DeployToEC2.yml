@@ -56,16 +56,14 @@ jobs:
             if [[ "$status" == "Success" || "$status" == "TimedOut" ]]; then
               break
             fi
-
+            # Print SSM output for debugging using list-command-invocations 
+            aws ssm list-command-invocations \
+              --command-id "$command_id" \
+              --details \
+              --query "CommandInvocations[0].CommandPlugins[0].Output" \
+              --output text
             sleep 120
           done
-
-          # Print SSM output for debugging using list-command-invocations 
-          aws ssm list-command-invocations \
-            --command-id "$command_id" \
-            --details \
-            --query "CommandInvocations[0].CommandPlugins[0].Output" \
-            --output text
 
       - name: Invoke Lambda Function For Processing #Invokes Lambda using name 
         run: |
