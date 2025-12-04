@@ -53,7 +53,7 @@ jobs:
 
             echo "Current command status: $status"
 
-            if [[ "$status" == "Success" || "$status" == "Failed" || "$status" == "TimedOut" ]]; then
+            if [[ "$status" == "Success" || "$status" == "TimedOut" ]]; then
               break
             fi
 
