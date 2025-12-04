@@ -33,13 +33,13 @@ jobs:
           stop-instance: false
       - name: Run Commands
         run: | #Maybe Place Commands in Bash Script instead to make this neater
-          command_id=$(aws ssm send-command \
-            --document-name "AWS-RunShellScript" \
-            --parameters 'commands=["/home/ubuntu/Sikraken/SikrakenDevSpace/bin/test_category_sikraken.sh /home/ubuntu/sv-benchmarks/c ECA 4 10 debug -no_testcov --ss=3"]' \
-            --targets "Key=instanceIds,Values=${{ secrets.EC2_INSTANCE_ID }}" \
-            --query "Command.CommandId" \
-            --output text)
-     
+          aws ssm send-command \
+          --document-name "AWS-RunShellScript" \
+          --parameters 'commands=["echo SSM is working > /home/ubuntu/ssm_test.txt"]' \
+          --targets "Key=instanceIds,Values=YOUR_INSTANCE_ID" \
+          --query "Command.CommandId" \
+          --output text
+
           # Poll for the command status until it completes
           while true; do
             # Get the current status of the command
