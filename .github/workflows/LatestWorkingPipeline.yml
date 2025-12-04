@@ -33,12 +33,12 @@ jobs:
           stop-instance: false
       - name: Run Commands
         run: | #Maybe Place Commands in Bash Script instead to make this neater
-          aws ssm send-command \
+          command_id=$(aws ssm send-command \
           --document-name "AWS-RunShellScript" \
           --parameters 'commands=["echo SSM is working > /home/ubuntu/ssm_test.txt"]' \
           --targets "Key=instanceIds,Values=${{ secrets.EC2_INSTANCE_ID }}" \
           --query "Command.CommandId" \
-          --output text
+          --output text)
 
           # Poll for the command status until it completes
           while true; do
