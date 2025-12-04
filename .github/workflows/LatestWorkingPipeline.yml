@@ -36,7 +36,7 @@ jobs:
           aws ssm send-command \
           --document-name "AWS-RunShellScript" \
           --parameters 'commands=["echo SSM is working > /home/ubuntu/ssm_test.txt"]' \
-          --targets "Key=instanceIds,Values=YOUR_INSTANCE_ID" \
+          --targets "Key=instanceIds,Values=${{ secrets.EC2_INSTANCE_ID }}" \
           --query "Command.CommandId" \
           --output text
 
