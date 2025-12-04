@@ -53,15 +53,17 @@ jobs:
 
             echo "Current command status: $status"
 
-            if [[ "$status" == "Success" || "$status" == "TimedOut" ]]; then
-              break
-            fi
             # Print SSM output for debugging using list-command-invocations 
             aws ssm list-command-invocations \
               --command-id "$command_id" \
               --details \
               --query "CommandInvocations[0].CommandPlugins[0].Output" \
               --output text
+
+            if [[ "$status" == "Success" || "$status" == "TimedOut" ]]; then
+              break
+            fi
+            
             sleep 120
           done
 
