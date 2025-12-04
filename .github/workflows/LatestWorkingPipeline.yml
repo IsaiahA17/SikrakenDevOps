@@ -1,4 +1,4 @@
-name: Deploy To EC2
+name: Latest Working Pipeline
 
 # Controls when the workflow will run
 on:
