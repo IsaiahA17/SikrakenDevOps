@@ -37,6 +37,8 @@ jobs:
           --document-name "AWS-RunShellScript" \
           --parameters 'commands=["echo SSM is working > /home/ubuntu/ssm_test.txt"]' \
           --targets "Key=instanceIds,Values=${{ secrets.EC2_INSTANCE_ID }}" \
+          --output-s3-bucket-name "${{ secrets.S3_BUCKET_NAME }}" \
+          --output-s3-key-prefix "ssm-outputs" \
           --query "Command.CommandId" \
           --output text)
 
