@@ -35,8 +35,10 @@ jobs:
         run: | #Maybe Place Commands in Bash Script instead to make this neater
           command_id=$(aws ssm send-command \
           --document-name "AWS-RunShellScript" \
-          --parameters 'commands=["echo SSM is working > /home/ubuntu/ssm_test.txt"]' \
-          --targets "Key=InstanceIds,Values=${{ secrets.EC2_INSTANCE_ID }}" \
+          --parameters "commands=[
+            \"bash /home/ubuntu/run_eca_categories.sh ${{ vars.CATEGORY }} ${{ vars.CORE_COUNT }} ${{ vars.TIME_BUDGET }} ${{ vars.DEBUG_MODE }} ${{ vars.TESTCOV_SETTING }} ${{ vars.STACK_SIZE }}\"
+            ]" \
+          --targets "Key=instanceids,Values=${{ secrets.EC2_INSTANCE_ID }}" \
           --output-s3-bucket-name "${{ secrets.S3_BUCKET_NAME }}" \
           --output-s3-key-prefix "ssm-outputs" \
           --query "Command.CommandId" \
