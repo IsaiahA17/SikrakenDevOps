@@ -46,130 +46,14 @@ def generate_report(input_dir):
     duration = duration.group(1)
     no_testcov = no_testcov.group(1) == "1"  # Converts to boolean for future use
 
-    total_coverage = 0 
-    total_tests = 0
-    rows = []
-
-    with open(benchmark_file_mapping, 'r') as file: #reading benchmark.txt file
-        benchmark_lines = file.readlines()
-
-    for line in benchmark_lines:
-        file_path = line.strip()
-        file_path = re.sub(r'\s+-\d+$', '', file_path) #Removing whitespace before hyphen, followed by digits at end of file path as -32 used to be printed out
-        benchmark_name = os.path.basename(file_path) #Getting the final part of the file path (name of file and extension)
-        benchmark_base = os.path.splitext(benchmark_name)[0] #Splitting name and extension from each other and getting just the name with [0]
-        
-        benchmark_dir = os.path.join(input_dir, benchmark_base) #joining input directory path and name to get the directory of the benchmark 
-        
-        plot_file = os.path.join(benchmark_dir, 'sikraken_plot.png') #Getting file paths of the png, html, and log files
-        html_coverage = os.path.join(benchmark_dir, f"{benchmark_base}.html") 
-        testcov_log_file = os.path.join(benchmark_dir, 'testcov_call.log')
-        sikraken_log = os.path.join(benchmark_dir, 'sikraken.log')
-        
-        if not os.path.isdir(benchmark_dir): #Continuing even if not a real directory 
-            continue
-        
-        sik_coverage = read_sikraken_coverage(sikraken_log) #Reading coverage metric from Sikraken log using Regex
-        
-        if no_testcov:
-            total_coverage += sik_coverage
-            tcv_coverage = "N/A"
-            testcov_log_link = "N/A"
-        else:
-            tcv_coverage = read_testcov_coverage(testcov_log_file) #Reading testcov metric if available using Regex
-            total_coverage += tcv_coverage
-            testcov_log_link = f'<a href="file://{testcov_log_file}" target="_blank">TestCov Log</a>'
-        
-        sik_test_count = read_sikraken_test_count(sikraken_log) #Reading test count from sikraken log using Regex
-        total_tests += sik_test_count
-        stack_peak = read_stack_peak(sikraken_log) #Reading stack peak from sikraken log using Regex
-        stack_peak_mb = stack_peak / 1048576
-        
-        row_class = 'style="background-color: lightcoral;"' if sik_test_count == 0 or sik_test_count == "N/A" else "" #Setting sikkraken test count data cells and background color
-        
-        code_link = f'<a href="file://{file_path}" target="_blank">{benchmark_name}</a>'
-        sikraken_log_link = f'<a href="file://{sikraken_log}" target="_blank">Sikraken Log</a>'
-        html_coverage_link = f'<a href="file://{html_coverage}" target="_blank">{benchmark_base}.html</a>'
-        
-        #Appending rows to the html body
-        rows.append(f"""
-        <tr {row_class}> 
-            <td>{code_link}</td>
-            <td>{sikraken_log_link}</td>
-            <td>{sik_test_count}</td>
-            <td>{html_coverage_link}</td>
-            <td>{sik_coverage}%</td>
-            <td>{tcv_coverage}%</td>
-            <td>{testcov_log_link}</td>
-            <td><a href="{plot_file}" target="_blank"><img src="{plot_file}" style="max-width: 150px; max-height: 100px;"></a></td>
-            <td>{stack_peak_mb}</td>
-        </tr>
-        """)
-
-    total_score = total_coverage / 100 #Calculating total score
-    total_score_label = f"{total_score} (sik)" if no_testcov else f"{total_score}"
-
-    # Generate HTML report
-    html_content = f"""
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>{category} Test Run Results</title>
-        <style>
-            table {{
-                width: 100%;
-                border-collapse: collapse;
-            }}
-            table, th, td {{
-                border: 1px solid black;
-            }}
-            th, td {{
-                padding: 8px;
-                text-align: left;
-            }}
-            th {{
-                background-color: #f2f2f2;
-            }}
-        </style>
-    </head>
-    <body>
-        <h1>TestComp Category: {category} category</h1>
-        <h2>Command Used: {command_used}</h2>
-        <h2>Timestamp: {timestamp}</h2>
-        <h2>Budget: {budget}</h2>
-        <h2>Mode: {mode}</h2>
-        <h2>Options: {options}</h2>
-        <h2>Number of Benchmarks: {len(benchmark_lines)}</h2>
-        <h2>Run time: {duration}</h2>
-        <h2>Cores: {cores}</h2>
-        <h2>Overall Score Achieved: {total_score_label}</h2>
-        <h2>Overall Tests Generated: {total_tests}</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Benchmark</th>
-                    <th>Sikraken Log</th>
-                    <th>Sikraken Number of Tests</th>
-                    <th>Highlighted Coverage</th>
-                    <th>Sikraken Coverage</th>
-                    <th>TestCov Coverage</th>
-                    <th>TestCov Log</th>
-                    <th>Graph</th>
-                    <th>Peak Global Stack (MB)</th>
-                </tr>
-            </thead>
-            <tbody>
-                {''.join(rows)}
-            </tbody>
-        </table>
-    </body>
-    </html>
-    """
+    rows, benchmark_lines, total_tests, total_score_label = retrieve_benchmark_information(benchmark_file_mapping, no_testcov, input_dir)
+    html_headers = generate_html_headers(category)
+    report_headers = generate_report_headers(category, command_used, timestamp, budget, mode, options, benchmark_lines
+                                             ,duration, cores, total_score_label, total_tests)
+    html_table = generate_table(rows)
 
     with open(html_file, 'w') as f:
-        f.write(html_content) #Writing html content to a html file found previously
+        f.write(html_headers + report_headers + html_table) 
 
     return {
         'statusCode': 200,
@@ -238,6 +122,148 @@ def read_stack_peak(sikraken_log):
     except Exception as e:
         print(f"An error occurred while reading {sikraken_log}: {e}")
         return 0  # Return 0 in case of other errors
+    
+def retrieve_benchmark_information(benchmark_file_mapping, no_testcov, input_dir):
+    total_coverage = 0 
+    total_tests = 0
+    rows = []
+
+    with open(benchmark_file_mapping, 'r') as file: #reading benchmark.txt file
+        benchmark_lines = file.readlines()
+
+    for line in benchmark_lines:
+        file_path = line.strip()
+        file_path = re.sub(r'\s+-\d+$', '', file_path) #Removing whitespace before hyphen, followed by digits at end of file path as -32 used to be printed out
+        benchmark_name = os.path.basename(file_path) #Getting the final part of the file path (name of file and extension)
+        benchmark_base = os.path.splitext(benchmark_name)[0] #Splitting name and extension from each other and getting just the name with [0]
+        
+        benchmark_dir = os.path.join(input_dir, benchmark_base) #joining input directory path and name to get the directory of the benchmark 
+        
+        plot_file = os.path.join(benchmark_dir, 'sikraken_plot.png') #Getting file paths of the png, html, and log files
+        html_coverage = os.path.join(benchmark_dir, f"{benchmark_base}.html") 
+        testcov_log_file = os.path.join(benchmark_dir, 'testcov_call.log')
+        sikraken_log = os.path.join(benchmark_dir, 'sikraken.log')
+        
+        if not os.path.isdir(benchmark_dir): #Continuing even if not a real directory 
+            continue
+        
+        sik_coverage = read_sikraken_coverage(sikraken_log) #Reading coverage metric from Sikraken log using Regex
+        
+        if no_testcov:
+            total_coverage += sik_coverage
+            tcv_coverage = "N/A"
+            testcov_log_link = "N/A"
+        else:
+            tcv_coverage = read_testcov_coverage(testcov_log_file) #Reading testcov metric if available using Regex
+            total_coverage += tcv_coverage
+            testcov_log_link = f'<a href="file://{testcov_log_file}" target="_blank">TestCov Log</a>'
+        
+        sik_test_count = read_sikraken_test_count(sikraken_log) #Reading test count from sikraken log using Regex
+        total_tests += sik_test_count
+        stack_peak = read_stack_peak(sikraken_log) #Reading stack peak from sikraken log using Regex
+        stack_peak_mb = stack_peak / 1048576
+        
+        row_class = 'style="background-color: lightcoral;"' if sik_test_count == 0 or sik_test_count == "N/A" else "" #Setting sikkraken test count data cells and background color
+        
+        code_link = f'<a href="file://{file_path}" target="_blank">{benchmark_name}</a>'
+        sikraken_log_link = f'<a href="file://{sikraken_log}" target="_blank">Sikraken Log</a>'
+        html_coverage_link = f'<a href="file://{html_coverage}" target="_blank">{benchmark_base}.html</a>'
+        
+        generate_benchmark_rows(rows, row_class, code_link, sikraken_log_link, sik_test_count, html_coverage_link,
+                                 testcov_log_link, plot_file, stack_peak_mb, sik_coverage, tcv_coverage)
+        
+    total_score = total_coverage / 100 #Calculating total score
+    total_score_label = f"{total_score} (sik)" if no_testcov else f"{total_score}"
+
+    return rows, benchmark_lines, total_tests, total_score_label
+
+#isolating row logic to make it easier to change
+def generate_benchmark_rows(rows, row_class, code_link, sikraken_log_link, sik_test_count, html_coverage_link, 
+                            testcov_log_link, plot_file, stack_peak_mb, sik_coverage, tcv_coverage):
+    rows.append(f"""
+        <tr {row_class}> 
+        <td>{code_link}</td>
+        <td>{sikraken_log_link}</td>
+        <td>{sik_test_count}</td>
+        <td>{html_coverage_link}</td>
+        <td>{testcov_log_link}</td>
+        <td><a href="{plot_file}" target="_blank"><img src="{plot_file}" style="max-width: 150px; max-height: 100px;"></a></td>
+        <td>{stack_peak_mb}</td>
+        <td>{tcv_coverage}%</td>
+        <td>{sik_coverage}%</td>
+    </tr>
+    """)
+
+#----- HTML CODE -----
+def generate_html_headers(category):
+    html_headers = f"""
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{category} Test Run Results</title>
+        <style>
+            table {{
+                width: 100%;
+                border-collapse: collapse;
+            }}
+            table, th, td {{
+                border: 1px solid black;
+            }}
+            th, td {{
+                padding: 8px;
+                text-align: left;
+            }}
+            th {{
+                background-color: #f2f2f2;
+            }}
+        </style>
+    </head>
+    """
+    return html_headers
+
+def generate_report_headers(category, command_used, timestamp, budget, mode, options, benchmark_lines, duration, cores, total_score_label, total_tests):
+    report_headers = f"""
+    <body>
+    <h1>TestComp Category: {category} category</h1>
+    <h2>Command Used: {command_used}</h2>
+    <h2>Timestamp: {timestamp}</h2>
+    <h2>Budget: {budget}</h2>
+    <h2>Mode: {mode}</h2>
+    <h2>Options: {options}</h2>
+    <h2>Number of Benchmarks: {len(benchmark_lines)}</h2>
+    <h2>Run time: {duration}</h2>
+    <h2>Cores: {cores}</h2>
+    <h2>Overall Score Achieved: {total_score_label}</h2>
+    <h2>Overall Tests Generated: {total_tests}</h2>
+    """
+    return report_headers
+
+def generate_table(rows):
+    html_table = f"""
+    <table>
+        <thead>
+            <tr>
+                <th>Benchmark</th>
+                <th>Sikraken Log</th>
+                <th>Sikraken Number of Tests</th>
+                <th>Highlighted Coverage</th>
+                <th>TestCov Log</th>
+                <th>Graph</th>
+                <th>Peak Global Stack (MB)</th>
+                <th>TestCov Coverage</th>
+                <th>Sikraken Coverage</th>
+            </tr>
+        </thead>
+        <tbody>
+            {''.join(rows)}
+        </tbody>
+    </table>
+    </body>
+    </html>
+    """
+    return html_table
 
 def main():
     # Set up argparse to parse the command-line argument for the input directory
