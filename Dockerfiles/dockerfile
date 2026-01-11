@@ -1,0 +1,51 @@
+# ===== ECLiPSe Dockerfile (CLI-only, Ubuntu 24.04) =====
+FROM ubuntu:24.04
+
+#Using 
+WORKDIR /app
+
+COPY . /app/sikraken
+
+WORKDIR /app/sikraken 
+
+#Removing and readding eclipse folder. In actual repo, just create eclipse folder
+RUN rm -rf /app/sikraken/eclipse
+
+RUN mkdir /app/sikraken/eclipse
+
+WORKDIR /app/sikraken/eclipse
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y --no-install-recommends\
+    wget \
+    libncurses-dev \
+    libstdc++6 \
+    ca-certificates \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create install directory and set it as working directory
+WORKDIR /app/sikraken/eclipse
+
+# Download and extract ECLiPSe
+RUN wget https://eclipseclp.org/Distribution/Builds/7.1_13/x86_64_linux/eclipse_basic.tgz \
+    && tar xzf eclipse_basic.tgz \
+    && rm eclipse_basic.tgz
+
+# Make install scripts, /.RUNME and ./ARCH executable and run ./RUNME
+RUN chmod +x RUNME ARCH \
+    && ./RUNME --no-docs --no-link
+
+# Set environment variables
+ENV ECLIPSEDIR=/app/sikraken/eclipse
+ENV PATH="$ECLIPSEDIR/bin/x86_64_linux:$PATH"
+
+WORKDIR /app/sikraken
+RUN mkdir ./sikraken_output/simple_if
+RUN gcc -E -P ./SampleCode/simple_if.c -o ./sikraken_output/simple_if/simple_if.i
+
+RUN /app/sikraken/bin/sikraken_parser.exe -d -m32 -p/app/sikraken/sikraken_output/simple_if simple_if
+
+WORKDIR /app/sikraken/sikraken_output/simple_if
+RUN ls -l
