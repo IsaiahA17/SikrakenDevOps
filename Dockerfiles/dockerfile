@@ -4,7 +4,7 @@ FROM ubuntu:24.04
 #Using 
 WORKDIR /app
 
-COPY . /app/sikraken
+COPY sikraken /app/sikraken
 
 WORKDIR /app/sikraken 
 
