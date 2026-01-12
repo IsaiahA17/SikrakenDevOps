@@ -24,13 +24,13 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: IsaiahA17/SikrakenDevOps
-          path: main
+          path: SikrakenDevOps
       
       - name: Checkout Sikraken Repo
         uses: actions/checkout@v6
         with:
           repository: echancrure/Sikraken
-          path: main
+          path: sikraken
 
       - name: Login to Amazon ECR
         id: login-ecr
