@@ -20,15 +20,18 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-        
-      - name: Configure AWS Credentials For ECR
-        uses: aws-actions/configure-aws-credentials@main 
+      - name: Checkout Current Repo
+        uses: actions/checkout@v6
         with:
-          role-to-assume: ${{ secrets.ECR_ACCESS_ROLE_ARN }}
-          aws-region: eu-west-1
-          
+          repository: IsaiahA17/SikrakenDevOps
+          path: main
+      
+      - name: Checkout Sikraken Repo
+        uses: actions/checkout@v6
+        with:
+          repository: echancrure/Sikraken
+          path: main
+
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
@@ -39,5 +42,5 @@ jobs:
           REPOSITORY: sikraken/image-repo
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG ./Dockerfiles/dockerfile
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -f SikrakenDevOps/Dockerfiles/dockerfile SikrakenDevOps
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
