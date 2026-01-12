@@ -30,7 +30,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: echancrure/Sikraken
-          path: sikraken
+          path: SikrakenDevOps/sikraken
 
       - name: Configure AWS Credentials For ECR
         uses: aws-actions/configure-aws-credentials@main 
