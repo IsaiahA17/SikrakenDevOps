@@ -42,7 +42,7 @@ ENV ECLIPSEDIR=/app/sikraken/eclipse
 ENV PATH="$ECLIPSEDIR/bin/x86_64_linux:$PATH"
 
 WORKDIR /app/sikraken
-RUN mkdir ./sikraken_output/simple_if
+RUN mkdir -p ./sikraken_output/simple_if
 RUN gcc -E -P ./SampleCode/simple_if.c -o ./sikraken_output/simple_if/simple_if.i
 
 RUN /app/sikraken/bin/sikraken_parser.exe -d -m32 -p/app/sikraken/sikraken_output/simple_if simple_if
