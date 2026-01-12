@@ -32,6 +32,12 @@ jobs:
           repository: echancrure/Sikraken
           path: sikraken
 
+      - name: Configure AWS Credentials For ECR
+        uses: aws-actions/configure-aws-credentials@main 
+        with:
+          role-to-assume: ${{ secrets.ECR_ACCESS_ROLE_ARN }}
+          aws-region: eu-west-1
+
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
