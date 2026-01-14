@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{{ category }} Test Run Results</title>
+        <style>
+            table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            table, th, td {
+                border: 1px solid black;
+            }
+            th, td {
+                padding: 8px;
+                text-align: left;
+            }
+            th {
+                background-color: #f2f2f2;
+            }
+        </style>
+    </head>
+
+    <body>
+    <h1>TestComp Category: {{ category }} category</h1>
+    <h2>Command Used: {{ command_used }}</h2>
+    <h2>Timestamp: {{ timestamp }}</h2>
+    <h2>Budget: {{ budget }}</h2>
+    <h2>Mode: {{ mode }}</h2>
+    <h2>Options: {{ options }}</h2>
+    <h2>Number of Benchmarks: {{ num_benchmarks }}</h2>
+    <h2>Run time: {{ duration }}</h2>
+    <h2>Cores: {{ cores }}</h2>
+    <h2>Overall Score Achieved: {{ total_score_label }}</h2>
+    <h2>Overall Tests Generated: {{ total_tests }}</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Benchmark</th>
+                <th>Sikraken Log</th>
+                <th>Sikraken Number of Tests</th>
+                <th>Highlighted Coverage</th>
+                <th>TestCov Log</th>
+                <th>Graph</th>
+                <th>Peak Global Stack (MB)</th>
+                <th>TestCov Coverage</th>
+                <th>Sikraken Coverage</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows %}
+            {% if row.sik_test_count == 0 %} <tr style="background-color: lightcoral;"> {% endif %}
+                <td>{{ row.code_link | safe }}</td>
+                <td>{{ row.sikraken_log_link | safe }}</td>
+                <td>{{ row.sik_test_count }}</td>
+                <td>{{ row.html_coverage_link | safe }}</td>
+                <td>{{ row.testcov_log_link | safe }}</td>
+                <td>
+                    <a href="{{ row.plot_file }}" target="_blank">
+                        <img src="{{ row.plot_file }}" style="max-width: 150px; max-height: 100px;">
+                    </a>
+                </td>
+                <td>{{ row.stack_peak_mb }}</td>
+                <td>{{ row.tcv_coverage }}</td>
+                <td>{{ row.sik_coverage }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </body>
+    </html>
