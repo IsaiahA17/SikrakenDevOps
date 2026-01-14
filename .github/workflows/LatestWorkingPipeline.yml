@@ -18,6 +18,7 @@ permissions:
 jobs:
   ConnectToEC2:
     runs-on: ubuntu-latest
+    timeout-minutes: 1
     
     steps:
       - name: Configure AWS Credentials
@@ -32,7 +33,7 @@ jobs:
           wait-instance-running: true
           stop-instance: false
 
-      - name: Run1 Commands
+      - name: Run Script
         run: |
           full_command="/home/ubuntu/run_eca_categories.sh ${{ vars.CATEGORY }} ${{ vars.CORE_COUNT }} ${{ vars.TIME_BUDGET }} ${{ vars.DEBUG_MODE }} ${{ vars.TESTCOV_SETTING }} ${{ vars.STACK_SIZE }}"
 
