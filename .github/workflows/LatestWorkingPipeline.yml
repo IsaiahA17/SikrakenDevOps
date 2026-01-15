@@ -34,7 +34,11 @@ jobs:
         run: | #Wait for instance to run before starting commands
           aws ec2 wait instance-running \
           --instance-ids ${{ secrets.EC2_INSTANCE_ID }}
-
+          
+  RunBenchmark:
+    needs: ConnectToEC2
+    runs-on: ubuntu-latest
+    steps:
       - name: Run Script
         timeout-minutes: 1
         run: |
@@ -80,6 +84,10 @@ jobs:
             sleep 120
           done
 
+  InvokeLambda:
+    needs: [ConnectToEC2,RunBenchmark]
+    runs-on: ubuntu-latest
+    steps:
       - name: Invoke Lambda Function For Processing
         run: |
           aws lambda invoke --function-name ${{ secrets.LAMBDA_NAME }} \
@@ -88,6 +96,11 @@ jobs:
           URL=$(jq -r '.body | fromjson | .url' response.json) #Using the jq JSON command line processor to isolate the value of the url key
           echo "$URL" | awk -F '?' '{print $1}' #Using the text processor awk to try and remove the unnecessary parts of the html url
           
+  ShutDownEC2:
+    if: ${{ always() }}
+    needs: [ConnectToEC2,RunBenchmark,InvokeLambda]
+    runs-on: ubuntu-latest
+    steps:
       - name: Stop EC2 #Keeping this commented for further testing to check the results of the pipeline commands
         run: |
           aws ec2 stop-instances \
