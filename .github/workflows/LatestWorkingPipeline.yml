@@ -46,7 +46,7 @@ jobs:
           aws-region: eu-west-1
           
       - name: Run Script
-        timeout-minutes: 1
+        timeout-minutes: 7
         run: |
           full_command="/home/ubuntu/run_eca_categories.sh ${{ vars.CATEGORY }} ${{ vars.CORE_COUNT }} ${{ vars.TIME_BUDGET }} ${{ vars.DEBUG_MODE }} ${{ vars.TESTCOV_SETTING }} ${{ vars.STACK_SIZE }}"
 
