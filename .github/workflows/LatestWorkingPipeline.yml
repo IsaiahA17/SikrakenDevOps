@@ -18,7 +18,6 @@ permissions:
 jobs:
   ConnectToEC2:
     runs-on: ubuntu-latest
-    timeout-minutes: 1
     
     steps:
       - name: Configure AWS Credentials
@@ -26,14 +25,18 @@ jobs:
         with:
           role-to-assume: ${{ secrets.EC2_ACCESS_ROLE_ARN }}
           aws-region: eu-west-1
+          
       - name: Start EC2
-        uses: flyweightrocks/aws-ec2-action@v1
-        with:
-          instance-id: ${{ secrets.EC2_INSTANCE_ID }}
-          wait-instance-running: true
-          stop-instance: false
+        run: | #AWS CLI github action to start ec2 instance with a given ID
+          aws ec2 start-instances --instance-ids ${{ secrets.EC2_INSTANCE_ID }}
+          
+      - name: Wait For EC2 To Run
+        run: | #Wait for instance to run before starting commands
+          aws ec2 wait instance-running \
+          --instance-ids ${{ secrets.EC2_INSTANCE_ID }}
 
       - name: Run Script
+        timeout-minutes: 1
         run: |
           full_command="/home/ubuntu/run_eca_categories.sh ${{ vars.CATEGORY }} ${{ vars.CORE_COUNT }} ${{ vars.TIME_BUDGET }} ${{ vars.DEBUG_MODE }} ${{ vars.TESTCOV_SETTING }} ${{ vars.STACK_SIZE }}"
 
@@ -86,8 +89,6 @@ jobs:
           echo "$URL" | awk -F '?' '{print $1}' #Using the text processor awk to try and remove the unnecessary parts of the html url
           
       - name: Stop EC2 #Keeping this commented for further testing to check the results of the pipeline commands
-        uses: flyweightrocks/aws-ec2-action@v1
-        with:
-          instance-id: ${{ secrets.EC2_INSTANCE_ID }}
-          wait-instance-running: false
-          stop-instance: true
+        run: |
+          aws ec2 stop-instances \
+          --instance-ids ${{ secrets.EC2_INSTANCE_ID }}
