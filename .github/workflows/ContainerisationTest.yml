@@ -36,7 +36,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: SoSy-Lab/SV-Benchmarks
-          ref: main
           path: SikrakenDevOps/SV-Benchmarks
           sparse-checkout: |
             c
