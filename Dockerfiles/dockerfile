@@ -1,13 +1,30 @@
 # ===== ECLiPSe Dockerfile (CLI-only, Ubuntu 24.04) =====
 FROM ubuntu:24.04
 
-#Using 
 WORKDIR /app
 
 COPY sikraken /app/sikraken
 
-COPY SV-Benchmarks /app/sv-benchmarks
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y --no-install-recommends\
+    wget \
+    curl \
+    unzip \
+    libncurses-dev \
+    libstdc++6 \
+    ca-certificates \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
 
+RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
+    && unzip awscliv2.zip \
+    && ./aws/install \
+    && rm -rf aws awscliv2.zip
+
+RUN aws --version 
+# Download SV-Benchmarks C folder
+RUN mkdir /app/sv-benchmarks/c 
+RUN curl -L https://gitlab.com/sosy-lab/benchmarking/sv-benchmarks/-/archive/main/sv-benchmarks-main.tar.gz     | tar xz --strip-components=2 -C /app/sv-benchmarks/c sv-benchmarks-main/c
+       
 WORKDIR /app/sikraken 
 
 #Removing and readding eclipse folder. In actual repo, just create eclipse folder
@@ -15,17 +32,7 @@ RUN rm -rf /app/sikraken/eclipse
 
 RUN mkdir /app/sikraken/eclipse
 
-WORKDIR /app/sikraken/eclipse
-
 ARG DEBIAN_FRONTEND=noninteractive
-
-RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y --no-install-recommends\
-    wget \
-    libncurses-dev \
-    libstdc++6 \
-    ca-certificates \
-    gcc \
-    && rm -rf /var/lib/apt/lists/*
 
 # Create install directory and set it as working directory
 WORKDIR /app/sikraken/eclipse
