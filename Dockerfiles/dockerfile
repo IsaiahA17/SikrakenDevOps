@@ -22,7 +22,7 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2
 
 RUN aws --version 
 # Download SV-Benchmarks C folder
-RUN mkdir -P ./sv-benchmarks/c 
+RUN mkdir -p ./sv-benchmarks/c 
 RUN curl -L https://gitlab.com/sosy-lab/benchmarking/sv-benchmarks/-/archive/main/sv-benchmarks-main.tar.gz     | tar xz --strip-components=2 -C /app/sv-benchmarks/c sv-benchmarks-main/c
        
 WORKDIR /app/sikraken 
