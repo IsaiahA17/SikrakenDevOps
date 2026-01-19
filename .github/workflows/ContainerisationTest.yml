@@ -32,6 +32,16 @@ jobs:
           repository: echancrure/Sikraken
           path: SikrakenDevOps/sikraken
 
+      - name: Checkout SV-Benchmarks Repo
+        uses: actions/checkout@v6
+        with:
+          repository: SoSy-Lab/SV-Benchmarks
+          ref: main
+          path: SikrakenDevOps/SV-Benchmarks
+          sparse-checkout: |
+            c
+          sparse-checkout-cone-mode: true
+
       - name: Configure AWS Credentials For ECR
         uses: aws-actions/configure-aws-credentials@main 
         with:
