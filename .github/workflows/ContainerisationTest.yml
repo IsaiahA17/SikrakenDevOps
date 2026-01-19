@@ -21,19 +21,19 @@ jobs:
     
     steps:
       - name: Checkout Current Repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           repository: IsaiahA17/SikrakenDevOps
           path: SikrakenDevOps
       
       - name: Checkout Sikraken Repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           repository: echancrure/Sikraken
           path: SikrakenDevOps/sikraken
 
       - name: Checkout SV-Benchmarks Repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           repository: SoSy-Lab/SV-Benchmarks
           ref: main
