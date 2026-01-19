@@ -6,6 +6,8 @@ WORKDIR /app
 
 COPY sikraken /app/sikraken
 
+COPY SV-Benchmarks /app/sv-benchmarks
+
 WORKDIR /app/sikraken 
 
 #Removing and readding eclipse folder. In actual repo, just create eclipse folder
