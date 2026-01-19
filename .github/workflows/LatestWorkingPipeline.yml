@@ -18,7 +18,6 @@ permissions:
 jobs:
   ConnectToEC2:
     runs-on: ubuntu-latest
-    timeout-minutes: 1
     
     steps:
       - name: Configure AWS Credentials
@@ -26,16 +25,30 @@ jobs:
         with:
           role-to-assume: ${{ secrets.EC2_ACCESS_ROLE_ARN }}
           aws-region: eu-west-1
+          
       - name: Start EC2
-        uses: flyweightrocks/aws-ec2-action@v1
+        run: | #AWS CLI github action to start ec2 instance with a given ID
+          aws ec2 start-instances --instance-ids ${{ secrets.EC2_INSTANCE_ID }}
+          
+      - name: Wait For EC2 To Run
+        run: | #Wait for instance to run before starting commands
+          aws ec2 wait instance-running \
+          --instance-ids ${{ secrets.EC2_INSTANCE_ID }}
+          
+  RunBenchmark:
+    needs: ConnectToEC2
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@main 
         with:
-          instance-id: ${{ secrets.EC2_INSTANCE_ID }}
-          wait-instance-running: true
-          stop-instance: false
-
+          role-to-assume: ${{ secrets.EC2_ACCESS_ROLE_ARN }}
+          aws-region: eu-west-1
+          
       - name: Run Script
+        timeout-minutes: 7
         run: |
-          full_command="/home/ubuntu/run_eca_categories.sh ${{ vars.CATEGORY }} ${{ vars.CORE_COUNT }} ${{ vars.TIME_BUDGET }} ${{ vars.DEBUG_MODE }} ${{ vars.TESTCOV_SETTING }} ${{ vars.STACK_SIZE }}"
+          full_command="cd /home/ubuntu/Sikraken && ./run_eca_categories.sh ${{ vars.CATEGORY }} ${{ vars.CORE_COUNT }} ${{ vars.TIME_BUDGET }} ${{ vars.DEBUG_MODE }} ${{ vars.TESTCOV_SETTING }} ${{ vars.STACK_SIZE }}"
 
           command_id=$(aws ssm send-command \
             --document-name "AWS-RunShellScript" \
@@ -77,6 +90,16 @@ jobs:
             sleep 120
           done
 
+  InvokeLambda:
+    needs: [ConnectToEC2,RunBenchmark]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@main 
+        with:
+          role-to-assume: ${{ secrets.EC2_ACCESS_ROLE_ARN }}
+          aws-region: eu-west-1
+          
       - name: Invoke Lambda Function For Processing
         run: |
           aws lambda invoke --function-name ${{ secrets.LAMBDA_NAME }} \
@@ -85,9 +108,18 @@ jobs:
           URL=$(jq -r '.body | fromjson | .url' response.json) #Using the jq JSON command line processor to isolate the value of the url key
           echo "$URL" | awk -F '?' '{print $1}' #Using the text processor awk to try and remove the unnecessary parts of the html url
           
-      - name: Stop EC2 #Keeping this commented for further testing to check the results of the pipeline commands
-        uses: flyweightrocks/aws-ec2-action@v1
+  ShutDownEC2:
+    if: ${{ always() }}
+    needs: [ConnectToEC2,RunBenchmark,InvokeLambda]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@main 
         with:
-          instance-id: ${{ secrets.EC2_INSTANCE_ID }}
-          wait-instance-running: false
-          stop-instance: true
+          role-to-assume: ${{ secrets.EC2_ACCESS_ROLE_ARN }}
+          aws-region: eu-west-1
+          
+      - name: Stop EC2 #Keeping this commented for further testing to check the results of the pipeline commands
+        run: |
+          aws ec2 stop-instances \
+          --instance-ids ${{ secrets.EC2_INSTANCE_ID }}
