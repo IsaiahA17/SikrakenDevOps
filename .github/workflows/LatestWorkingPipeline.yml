@@ -1,4 +1,4 @@
-name: Latest Working Pipeline
+name: ECA Benchmarks With EC2
 
 # Controls when the workflow will run
 on:
