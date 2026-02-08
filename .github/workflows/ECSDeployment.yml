@@ -58,15 +58,13 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build, tag, and push docker image to Amazon ECR
-        working-directory: SikrakenDevOps
+        working-directory: /home/runner/work/SikrakenDevOps
         id: build-image
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPOSITORY: sikraken/image-repo
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          echo$(pwd)
-          echo$(ls)
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -f Dockerfiles/dockerfile sikraken
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
           echo "image=$REGISTRY/$REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
