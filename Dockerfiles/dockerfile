@@ -1,60 +1,35 @@
-# ===== ECLiPSe Dockerfile (CLI-only, Ubuntu 24.04) =====
 FROM ubuntu:24.04
 
 WORKDIR /app
 
-COPY sikraken /app/sikraken
-
-RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y --no-install-recommends\
-    wget \
-    curl \
-    unzip \
-    libncurses-dev \
-    libstdc++6 \
-    ca-certificates \
-    gcc \
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y \
+    wget curl unzip gcc ca-certificates \
+    libncurses-dev libstdc++6 \
     && rm -rf /var/lib/apt/lists/*
 
-RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
+RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o awscliv2.zip \
     && unzip awscliv2.zip \
     && ./aws/install \
     && rm -rf aws awscliv2.zip
 
-RUN aws --version 
-# Download SV-Benchmarks C folder
-RUN mkdir -p ./sv-benchmarks/c 
-RUN curl -L https://gitlab.com/sosy-lab/benchmarking/sv-benchmarks/-/archive/main/sv-benchmarks-main.tar.gz     | tar xz --strip-components=2 -C /app/sv-benchmarks/c sv-benchmarks-main/c
-       
-WORKDIR /app/sikraken 
+COPY sikraken /app/sikraken
+#COPY . /app/sikraken
 
-#Removing and readding eclipse folder. In actual repo, just create eclipse folder
-RUN rm -rf /app/sikraken/eclipse
-
-RUN mkdir /app/sikraken/eclipse
-
-ARG DEBIAN_FRONTEND=noninteractive
-
-# Create install directory and set it as working directory
 WORKDIR /app/sikraken/eclipse
-
-# Download and extract ECLiPSe
 RUN wget https://eclipseclp.org/Distribution/Builds/7.1_13/x86_64_linux/eclipse_basic.tgz \
     && tar xzf eclipse_basic.tgz \
-    && rm eclipse_basic.tgz
-
-# Make install scripts, /.RUNME and ./ARCH executable and run ./RUNME
-RUN chmod +x RUNME ARCH \
+    && rm eclipse_basic.tgz \
+    && chmod +x RUNME ARCH \
     && ./RUNME --no-docs --no-link
 
-# Set environment variables
 ENV ECLIPSEDIR=/app/sikraken/eclipse
 ENV PATH="$ECLIPSEDIR/bin/x86_64_linux:$PATH"
 
-WORKDIR /app/sikraken
-RUN mkdir -p ./sikraken_output/simple_if
-RUN gcc -E -P ./SampleCode/simple_if.c -o ./sikraken_output/simple_if/simple_if.i
+RUN ln -s /shared/benchmarks /app/sikraken/shared
 
-RUN /app/sikraken/bin/sikraken_parser.exe -d -m32 -p/app/sikraken/sikraken_output/simple_if simple_if
+COPY bin/test_category_sikraken_ecs.sh /app/bin/test_category_sikraken_ecs.sh
+RUN chmod +x /app/bin/test_category_sikraken_ecs.sh
 
-WORKDIR /app/sikraken/sikraken_output/simple_if
-RUN ls -l
+VOLUME ["/shared"]
+
+ENTRYPOINT ["/app/bin/test_category_sikraken_ecs.sh"]
