@@ -64,7 +64,6 @@ jobs:
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
           echo "image=$REGISTRY/$REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
-      steps:
       - name: Configure AWS Credentials For ECR
         uses: aws-actions/configure-aws-credentials@main 
         with:
