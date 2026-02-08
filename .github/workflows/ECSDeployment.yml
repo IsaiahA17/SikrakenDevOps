@@ -18,7 +18,7 @@ permissions:
 jobs:
   CheckoutRepositories:
     runs-on: ubuntu-latest
-    
+    environment: ECS
     steps:
       - name: Checkout Current Repo
         uses: actions/checkout@v6
@@ -42,11 +42,6 @@ jobs:
           git fetch origin
           git checkout C_ver         
           
-  BuildImageAndDeployToECS:
-    needs: CheckoutRepositories
-    runs-on: ubuntu-latest
-    environment: ECS
-    steps:
       - name: Configure AWS Credentials For ECR
         uses: aws-actions/configure-aws-credentials@main 
         with:
@@ -64,7 +59,7 @@ jobs:
           REPOSITORY: sikraken/image-repo
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -f SikrakenDevOps/Dockerfiles/dockerfile SikrakenDevOps/SikrakenDevOps/sikraken
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -f SikrakenDevOps/Dockerfiles/dockerfile SikrakenDevOps
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
           echo "image=$REGISTRY/$REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
