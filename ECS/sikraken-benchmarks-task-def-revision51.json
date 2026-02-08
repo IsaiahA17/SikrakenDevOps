@@ -63,6 +63,10 @@
                 {
                     "name": "TASK_INDEX",
                     "value": "0"
+                },
+                {
+                    "name": "TIMESTAMP",
+                    "value": "0"
                 }
             ],
             "mountPoints": [
