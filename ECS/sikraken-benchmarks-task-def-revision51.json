@@ -1,0 +1,150 @@
+{
+    "taskDefinitionArn": "arn:aws:ecs:eu-west-1:713141626063:task-definition/sikraken-benchmarks-task-def:51",
+    "containerDefinitions": [
+        {
+            "name": "benchmarks-container",
+            "image": "713141626063.dkr.ecr.eu-west-1.amazonaws.com/sikraken/image-repo@sha256:72163f0cb5f82079e9d134567c1e523ddd13516ff457c83b2d583db4d8c973af",
+            "cpu": 0,
+            "portMappings": [],
+            "essential": false,
+            "environment": [],
+            "mountPoints": [
+                {
+                    "sourceVolume": "shared-data",
+                    "containerPath": "/shared"
+                }
+            ],
+            "volumesFrom": [],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/sikraken-benchmarks",
+                    "awslogs-region": "eu-west-1",
+                    "awslogs-stream-prefix": "benchmarks"
+                }
+            },
+            "systemControls": []
+        },
+        {
+            "name": "sikraken-container",
+            "image": "713141626063.dkr.ecr.eu-west-1.amazonaws.com/sikraken/image-repo@sha256:57a3d97e8d6f8170b3c51ff9c1446785938ee0f458cf29deb229037c4d76facd",
+            "cpu": 0,
+            "portMappings": [],
+            "essential": true,
+            "environment": [
+                {
+                    "name": "S3_BUCKET",
+                    "value": "ecs-benchmark-output"
+                },
+                {
+                    "name": "CORES",
+                    "value": "4"
+                },
+                {
+                    "name": "STACK_SIZE_GB",
+                    "value": "3"
+                },
+                {
+                    "name": "CATEGORY",
+                    "value": "ECA"
+                },
+                {
+                    "name": "MODE",
+                    "value": "release"
+                },
+                {
+                    "name": "BUDGET",
+                    "value": "900"
+                },
+                {
+                    "name": "TASK_COUNT",
+                    "value": "4"
+                },
+                {
+                    "name": "TASK_INDEX",
+                    "value": "0"
+                }
+            ],
+            "mountPoints": [
+                {
+                    "sourceVolume": "shared-data",
+                    "containerPath": "/shared"
+                }
+            ],
+            "volumesFrom": [],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/sikraken-benchmarks",
+                    "awslogs-region": "eu-west-1",
+                    "awslogs-stream-prefix": "sikraken"
+                }
+            },
+            "systemControls": []
+        }
+    ],
+    "family": "sikraken-benchmarks-task-def",
+    "taskRoleArn": "arn:aws:iam::713141626063:role/ecsTaskExecutionRole",
+    "executionRoleArn": "arn:aws:iam::713141626063:role/ecsTaskExecutionRole",
+    "networkMode": "awsvpc",
+    "revision": 51,
+    "volumes": [
+        {
+            "name": "shared-data",
+            "host": {}
+        }
+    ],
+    "status": "ACTIVE",
+    "requiresAttributes": [
+        {
+            "name": "com.amazonaws.ecs.capability.logging-driver.awslogs"
+        },
+        {
+            "name": "ecs.capability.execution-role-awslogs"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.ecr-auth"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.19"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.21"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.task-iam-role"
+        },
+        {
+            "name": "ecs.capability.execution-role-ecr-pull"
+        },
+        {
+            "name": "ecs.capability.extensible-ephemeral-storage"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.18"
+        },
+        {
+            "name": "ecs.capability.task-eni"
+        }
+    ],
+    "placementConstraints": [],
+    "compatibilities": [
+        "EC2",
+        "FARGATE"
+    ],
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
+    "cpu": "1024",
+    "memory": "8192",
+    "ephemeralStorage": {
+        "sizeInGiB": 200
+    },
+    "runtimePlatform": {
+        "cpuArchitecture": "X86_64",
+        "operatingSystemFamily": "LINUX"
+    },
+    "registeredAt": "2026-02-07T23:06:11.821Z",
+    "registeredBy": "arn:aws:iam::713141626063:root",
+    "tags": []
+}
