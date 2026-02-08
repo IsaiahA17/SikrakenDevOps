@@ -34,9 +34,7 @@ jobs:
       
       - name: Init PTC-Solver
         run: |
-          ls SikrakenDevOps/sikraken
-          cat SikrakenDevOps/sikraken/.gitmodules
-          git -C SikrakenDevOps/sikraken submodule update --init Sikraken/PTC-Solver
+          git -C SikrakenDevOps/sikraken submodule update --init PTC-Solver
           
           # Move into the submodule
           cd SikrakenDevOps/sikraken/PTC-Solver          
