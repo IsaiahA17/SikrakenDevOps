@@ -1,4 +1,4 @@
-name: ContainerisationTest
+name: ECS Deployment
 
 # Controls when the workflow will run
 on:
@@ -16,7 +16,7 @@ permissions:
   
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  ConfigureCredentialsAndBuildImage:
+  CheckoutRepositories:
     runs-on: ubuntu-latest
     
     steps:
@@ -29,9 +29,20 @@ jobs:
       - name: Checkout Sikraken Repo
         uses: actions/checkout@v6
         with:
-          repository: echancrure/Sikraken
+          repository: IsaiahA17/Sikraken
           path: SikrakenDevOps/sikraken
-
+          submodules: true
+      
+      - name: Remove SikrakenDevSpace
+        run: |
+          git -C SikrakenDevOps/sikraken submodule deinit SikrakenDevSpace
+          git -C SikrakenDevOps/sikraken rm -rf .git/modules/SikrakenDevSpace
+          
+  BuildImageAndDeployToECS:
+    needs: CheckoutRepositories
+    runs-on: ubuntu-latest
+    environment: ECS
+    steps:
       - name: Configure AWS Credentials For ECR
         uses: aws-actions/configure-aws-credentials@main 
         with:
@@ -43,6 +54,7 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build, tag, and push docker image to Amazon ECR
+        id: build-image
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPOSITORY: sikraken/image-repo
@@ -50,3 +62,24 @@ jobs:
         run: |
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -f SikrakenDevOps/Dockerfiles/dockerfile SikrakenDevOps
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+          echo "image=$REGISTRY/$REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      steps:
+      - name: Configure AWS Credentials For ECR
+        uses: aws-actions/configure-aws-credentials@main 
+        with:
+          role-to-assume: ${{ secrets.ECR_ACCESS_ROLE_ARN }}
+          aws-region: eu-west-1
+
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@c804dfbdd57f713b6c079302a4c01db7017a36fc
+        with:
+          task-definition: ${{ vars.ECS_TASK_DEFINITION }}
+          container-name: ${{ vars.CONTAINER_NAME }}
+          image: ${{ steps.build-image.outputs.image }}
+
+      - name: Execute ECS Tasks
+        run: |
+          chmod +x SikrakenDevOps/ECS/run_ecs.sh 
+          SikrakenDevOps/ECS/run_ecs.sh "${{ vars.ECS_CLUSTER }}" "${{ vars.ECS_TASK_DEFINITION }}" "${{ vars.TASK_COUNT }}" "${{ vars.CATEGORY }}" "${{ vars.BUDGET }}" 
