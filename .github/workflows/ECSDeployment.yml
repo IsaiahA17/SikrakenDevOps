@@ -31,12 +31,15 @@ jobs:
         with:
           repository: IsaiahA17/Sikraken
           path: SikrakenDevOps/sikraken
-          submodules: true
       
-      - name: Remove SikrakenDevSpace
+      - name: Init PTC-Solver
         run: |
-          git -C SikrakenDevOps/sikraken submodule deinit SikrakenDevSpace
-          git -C SikrakenDevOps/sikraken rm -rf .git/modules/SikrakenDevSpace
+          git -C SikrakenDevOps/sikraken submodule update --init Sikraken/PTC-Solver
+          
+          # Move into the submodule
+          cd SikrakenDevOps/sikraken/PTC-Solver          
+          git fetch origin
+          git checkout C_ver         
           
   BuildImageAndDeployToECS:
     needs: CheckoutRepositories
