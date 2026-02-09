@@ -80,4 +80,4 @@ jobs:
       - name: Execute ECS Tasks
         run: |
           chmod +x SikrakenDevOps/ECS/run_ecs.sh 
-          SikrakenDevOps/ECS/run_ecs.sh "${{ vars.ECS_CLUSTER }}" "${{ vars.ECS_TASK_DEFINITION }}" "${{ vars.TASK_COUNT }}" "${{ vars.CATEGORY }}" "${{ vars.BUDGET }}" 
+          SikrakenDevOps/ECS/run_ecs.sh "${{ vars.ECS_CLUSTER }}" "${{ steps.task-def.outputs.task-definition  }}" "${{ vars.TASK_COUNT }}" "${{ vars.CATEGORY }}" "${{ vars.BUDGET }}" 
