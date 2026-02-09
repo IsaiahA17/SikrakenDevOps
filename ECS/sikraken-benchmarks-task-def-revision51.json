@@ -53,10 +53,6 @@
                     "value": "release"
                 },
                 {
-                    "name": "TIMESTAMP",
-                    "value": "0"
-                },
-                {
                     "name": "BUDGET",
                     "value": "900"
                 },
