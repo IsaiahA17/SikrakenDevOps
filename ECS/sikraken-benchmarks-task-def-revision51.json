@@ -95,7 +95,6 @@
     "volumes": [
         {
             "name": "shared-data",
-            "host": {}
         }
     ],
     "placementConstraints": [],
