@@ -80,7 +80,7 @@ jobs:
       - name: Register New Task
         id: register-task
         run: |
-          echo "task-def=$(aws ecs register-task-definition --cli-input-json file://${{ steps.task-def.outputs.task-definition }} --query 'taskDefinition.taskDefinitionArn' --output text") >>$GITHUB_OUTPUT
+          echo "task-def=$(aws ecs register-task-definition --cli-input-json file://${{ steps.task-def.outputs.task-definition }} --query 'taskDefinition.taskDefinitionArn' --output text)" >>$GITHUB_OUTPUT
         
       - name: Execute ECS Tasks
         run: |
