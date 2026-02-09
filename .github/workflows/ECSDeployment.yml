@@ -77,7 +77,12 @@ jobs:
           container-name: ${{ vars.CONTAINER_NAME }}
           image: ${{ steps.build-image.outputs.image }}
 
+      - name: Register New Task
+        id: register-task
+        run: |
+          echo "task-def=$(aws ecs register-task-definition --cli-input-json file://${{ steps.task-def.outputs.task-definition }} --query 'taskDefinition.taskDefinitionArn' --output text") >>$GITHUB_OUTPUT
+        
       - name: Execute ECS Tasks
         run: |
           chmod +x SikrakenDevOps/ECS/run_ecs.sh 
-          SikrakenDevOps/ECS/run_ecs.sh "${{ vars.ECS_CLUSTER }}" "${{ steps.task-def.outputs.task-definition  }}" "${{ vars.TASK_COUNT }}" "${{ vars.CATEGORY }}" "${{ vars.BUDGET }}" 
+          SikrakenDevOps/ECS/run_ecs.sh "${{ vars.ECS_CLUSTER }}" "${{ steps.register-task.outputs.task-def }}" "${{ vars.TASK_COUNT }}" "${{ vars.CATEGORY }}" "${{ vars.BUDGET }}" 
