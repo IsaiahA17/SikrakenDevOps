@@ -84,7 +84,13 @@
                     "awslogs-stream-prefix": "sikraken"
                 }
             },
-            "systemControls": []
+            "systemControls": [],
+            "dependsOn": [
+                {
+                    "containerName": "benchmarks-container",
+                    "condition": "SUCCESS"
+                }
+            ]
         }
     ],
     "taskRoleArn": "arn:aws:iam::713141626063:role/ecsTaskExecutionRole",
