@@ -1,5 +1,5 @@
 {
-    "taskDefinitionArn": "arn:aws:ecs:eu-west-1:713141626063:task-definition/sikraken-benchmarks-task-def:51",
+    "family": "sikraken-benchmarks-task-def",
     "containerDefinitions": [
         {
             "name": "benchmarks-container",
@@ -27,7 +27,7 @@
         },
         {
             "name": "sikraken-container",
-            "image": "713141626063.dkr.ecr.eu-west-1.amazonaws.com/sikraken/image-repo@sha256:57a3d97e8d6f8170b3c51ff9c1446785938ee0f458cf29deb229037c4d76facd",
+            "image": "713141626063.dkr.ecr.eu-west-1.amazonaws.com/sikraken/image-repo@sha256:3d4dceb3a9abaeab721c30fb6d9fb1b55bbc2ed3f253f2a37833c74a69620804",
             "cpu": 0,
             "portMappings": [],
             "essential": true,
@@ -53,6 +53,10 @@
                     "value": "release"
                 },
                 {
+                    "name": "TIMESTAMP",
+                    "value": "0"
+                },
+                {
                     "name": "BUDGET",
                     "value": "900"
                 },
@@ -62,10 +66,6 @@
                 },
                 {
                     "name": "TASK_INDEX",
-                    "value": "0"
-                },
-                {
-                    "name": "TIMESTAMP",
                     "value": "0"
                 }
             ],
@@ -87,55 +87,16 @@
             "systemControls": []
         }
     ],
-    "family": "sikraken-benchmarks-task-def",
     "taskRoleArn": "arn:aws:iam::713141626063:role/ecsTaskExecutionRole",
     "executionRoleArn": "arn:aws:iam::713141626063:role/ecsTaskExecutionRole",
     "networkMode": "awsvpc",
-    "revision": 51,
     "volumes": [
         {
             "name": "shared-data",
             "host": {}
         }
     ],
-    "status": "ACTIVE",
-    "requiresAttributes": [
-        {
-            "name": "com.amazonaws.ecs.capability.logging-driver.awslogs"
-        },
-        {
-            "name": "ecs.capability.execution-role-awslogs"
-        },
-        {
-            "name": "com.amazonaws.ecs.capability.ecr-auth"
-        },
-        {
-            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.19"
-        },
-        {
-            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.21"
-        },
-        {
-            "name": "com.amazonaws.ecs.capability.task-iam-role"
-        },
-        {
-            "name": "ecs.capability.execution-role-ecr-pull"
-        },
-        {
-            "name": "ecs.capability.extensible-ephemeral-storage"
-        },
-        {
-            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.18"
-        },
-        {
-            "name": "ecs.capability.task-eni"
-        }
-    ],
     "placementConstraints": [],
-    "compatibilities": [
-        "EC2",
-        "FARGATE"
-    ],
     "requiresCompatibilities": [
         "FARGATE"
     ],
@@ -147,8 +108,5 @@
     "runtimePlatform": {
         "cpuArchitecture": "X86_64",
         "operatingSystemFamily": "LINUX"
-    },
-    "registeredAt": "2026-02-07T23:06:11.821Z",
-    "registeredBy": "arn:aws:iam::713141626063:root",
-    "tags": []
+    }
 }
