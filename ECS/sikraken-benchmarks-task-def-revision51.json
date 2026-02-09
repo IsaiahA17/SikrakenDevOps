@@ -94,7 +94,7 @@
     "networkMode": "awsvpc",
     "volumes": [
         {
-            "name": "shared-data",
+            "name": "shared-data"
         }
     ],
     "placementConstraints": [],
