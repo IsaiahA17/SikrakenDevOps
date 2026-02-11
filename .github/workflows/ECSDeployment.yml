@@ -62,6 +62,7 @@ jobs:
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -f SikrakenDevOps/Dockerfiles/dockerfile SikrakenDevOps
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
           echo "image=$REGISTRY/$REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
       - name: Configure AWS Credentials For ECR
         uses: aws-actions/configure-aws-credentials@main 
         with:
@@ -82,6 +83,57 @@ jobs:
           echo "task-def=$(aws ecs register-task-definition --cli-input-json file://${{ steps.task-def.outputs.task-definition }} --query 'taskDefinition.taskDefinitionArn' --output text)" >>$GITHUB_OUTPUT
         
       - name: Execute ECS Tasks
+        id: execute-ecs
         run: |
           chmod +x SikrakenDevOps/ECS/run_ecs.sh 
-          SikrakenDevOps/ECS/run_ecs.sh "${{ vars.ECS_CLUSTER }}" "${{ steps.register-task.outputs.task-def }}" "${{ vars.TASK_COUNT }}" "${{ vars.CATEGORY }}" "${{ vars.BUDGET }}" 
+           OUTPUT=$(SikrakenDevOps/ECS/run_ecs.sh "${{ vars.ECS_CLUSTER }}" "${{ steps.register-task.outputs.task-def }}" "${{ vars.TASK_COUNT }}" "${{ vars.CATEGORY }}" "${{ vars.BUDGET }}")
+          
+          echo "$OUTPUT"
+          TASK_ARNS=$(echo "$OUTPUT" | grep '^TASK_ARNS=' | cut -d= -f2-)
+          echo "task_arns=$TASK_ARNS" >> $GITHUB_OUTPUT
+
+      - name: Wait for ECS Tasks to Complete
+        run: |
+          CLUSTER="${{ vars.ECS_CLUSTER }}"
+          TASK_ARNS="${{ steps.execute-ecs.outputs.task_arns }}"
+      
+          echo "Waiting for ECS tasks to complete..."
+          echo "Tasks: $TASK_ARNS"
+      
+          while true; do
+            STATUSES=$(aws ecs describe-tasks \
+              --cluster "$CLUSTER" \
+              --tasks $TASK_ARNS \
+              --query 'tasks[].lastStatus' \
+              --output text)
+          
+            echo "Current statuses: $STATUSES"
+          
+            # Check if all statuses are "STOPPED"
+            if [[ $(echo "$STATUSES" | tr '\t' '\n' | grep -v 'STOPPED' | wc -l) -eq 0 ]]; then
+              echo "All tasks have stopped."
+              break
+          fi
+        
+          sleep 20
+          done
+
+          
+  InvokeLambda:
+      environment: ECS
+      needs: [CheckoutRepositories]
+      runs-on: ubuntu-latest
+      steps:
+        - name: Configure AWS Credentials
+          uses: aws-actions/configure-aws-credentials@main 
+          with:
+            role-to-assume: ${{ secrets.EC2_ACCESS_ROLE_ARN }}
+            aws-region: eu-west-1
+            
+        - name: Invoke Lambda Function For Processing
+          run: |
+            aws lambda invoke --function-name ${{ secrets.LAMBDA_NAME }} \
+            --cli-binary-format raw-in-base64-out \
+            --payload '{ "Category": "${{ vars.CATEGORY }}" }' response.json
+            URL=$(jq -r '.body | fromjson | .url' response.json) #Using the jq JSON command line processor to isolate the value of the url key
+            echo "$URL" | awk -F '?' '{print $1}' #Using the text processor awk to try and remove the unnecessary parts of the html url
