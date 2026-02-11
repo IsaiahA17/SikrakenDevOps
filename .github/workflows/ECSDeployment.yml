@@ -106,16 +106,18 @@ jobs:
               --tasks $TASK_ARNS \
               --query 'tasks[].lastStatus' \
               --output text)
-      
+          
             echo "Current statuses: $STATUSES"
-      
-            if echo "$STATUSES" | grep -vqE 'PENDING|RUNNING'; then
+          
+            # Check if all statuses are "STOPPED"
+            if [[ $(echo "$STATUSES" | tr '\t' '\n' | grep -v 'STOPPED' | wc -l) -eq 0 ]]; then
               echo "All tasks have stopped."
               break
-            fi
-      
-            sleep 20
+          fi
+        
+          sleep 20
           done
+
           
   InvokeLambda:
       environment: ECS
