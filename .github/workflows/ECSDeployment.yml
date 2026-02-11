@@ -115,7 +115,7 @@ jobs:
               break
           fi
         
-          sleep 20
+          sleep 480
           done
 
           
