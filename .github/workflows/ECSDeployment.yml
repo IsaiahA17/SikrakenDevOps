@@ -47,6 +47,7 @@ jobs:
         with:
           role-to-assume: ${{ secrets.ECR_ACCESS_ROLE_ARN }}
           aws-region: eu-west-1
+          role-duration-seconds: 14400
 
       - name: Login to Amazon ECR
         id: login-ecr
@@ -62,12 +63,6 @@ jobs:
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -f SikrakenDevOps/Dockerfiles/dockerfile SikrakenDevOps
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
           echo "image=$REGISTRY/$REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
-
-      - name: Configure AWS Credentials For ECR
-        uses: aws-actions/configure-aws-credentials@main 
-        with:
-          role-to-assume: ${{ secrets.ECR_ACCESS_ROLE_ARN }}
-          aws-region: eu-west-1
 
       - name: Fill in the new image ID in the Amazon ECS task definition
         id: task-def
@@ -118,7 +113,6 @@ jobs:
           sleep 480
           done
 
-          
   InvokeLambda:
       environment: ECS
       needs: [CheckoutRepositories]
@@ -129,6 +123,7 @@ jobs:
           with:
             role-to-assume: ${{ secrets.EC2_ACCESS_ROLE_ARN }}
             aws-region: eu-west-1
+            role-duration-seconds: 14400
             
         - name: Invoke Lambda Function For Processing
           run: |
