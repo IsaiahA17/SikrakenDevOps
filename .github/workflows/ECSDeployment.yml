@@ -81,7 +81,7 @@ jobs:
         id: execute-ecs
         run: |
           chmod +x SikrakenDevOps/ECS/run_ecs.sh 
-           OUTPUT=$(SikrakenDevOps/ECS/run_ecs.sh "${{ vars.ECS_CLUSTER }}" "${{ steps.register-task.outputs.task-def }}" "${{ vars.TASK_COUNT }}" "${{ vars.CATEGORY }}" "${{ vars.BUDGET }}")
+           OUTPUT=$(SikrakenDevOps/ECS/run_ecs.sh "${{ vars.ECS_CLUSTER }}" "${{ steps.register-task.outputs.task-def }}" "${{ vars.TASK_COUNT }}" "${{ vars.CATEGORY }}" "${{ vars.BUDGET }}" "${{ vars.MODE }}")
           
           echo "$OUTPUT"
           TASK_ARNS=$(echo "$OUTPUT" | grep '^TASK_ARNS=' | cut -d= -f2-)
