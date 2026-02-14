@@ -3,7 +3,7 @@ set -euo pipefail
 
 CLUSTER="${1:-${CLUSTER:-sikraken-cluster}}"
 TASK_DEF="${2:-${TASK_DEF:-sikraken-benchmarks-task-def}}"
-SHARD_COUNT="${3:-${SHARD_COUNT:-5}}"
+TASK_COUNT="${3:-${TASK_COUNT:-5}}"
 CATEGORY="${4:-${CATEGORY:-chris}}"
 BUDGET="${5:-${BUDGET:-10}}"
 
@@ -13,8 +13,8 @@ SG="sg-0b94b75a72c6f0356"
 TASK_ARNS=()
 
 launch_shard() {
-    local SHARD_INDEX=$1
-    local SUBNET=${SUBNET_ARRAY[$((SHARD_INDEX % ${#SUBNET_ARRAY[@]}))]}
+    local TASK_INDEX=$1
+    local SUBNET=${SUBNET_ARRAY[$((TASK_INDEX % ${#SUBNET_ARRAY[@]}))]}
 
     OUT=$(aws ecs run-task \
         --cluster "$CLUSTER" \
@@ -28,8 +28,8 @@ launch_shard() {
               \"environment\": [
                 {\"name\": \"CATEGORY\", \"value\": \"$CATEGORY\"},
                 {\"name\": \"BUDGET\", \"value\": \"$BUDGET\"},
-                {\"name\": \"SHARD_INDEX\", \"value\": \"$SHARD_INDEX\"},
-                {\"name\": \"SHARD_COUNT\", \"value\": \"$SHARD_COUNT\"}
+                {\"name\": \"TASK_INDEX\", \"value\": \"$TASK_INDEX\"},
+                {\"name\": \"TASK_COUNT\", \"value\": \"$TASK_COUNT\"}
               ]
             }
           ]
@@ -43,18 +43,18 @@ launch_shard() {
     TASK_ARN=$(echo "$OUT" | jq -r '.tasks[0].taskArn // empty')
 
     if [[ -n "$TASK_ARN" ]]; then
-        echo "shard $SHARD_INDEX Accepted: $TASK_ARN"
+        echo "shard $TASK_INDEX Accepted: $TASK_ARN"
         TASK_ARNS+=("$TASK_ARN")
         return 0
     else
-        echo "shard $SHARD_INDEX Rejected: $(echo "$OUT" | jq -r '.failures')"
+        echo "shard $TASK_INDEX Rejected: $(echo "$OUT" | jq -r '.failures')"
         return 1
     fi
 }
 
-echo "Starting launch of $SHARD_COUNT shards..."
+echo "Starting launch of $TASK_COUNT shards..."
 
-for ((i=0; i<SHARD_COUNT; i++)); do
+for ((i=0; i<TASK_COUNT; i++)); do
     while true; do
         if launch_shard "$i"; then
             break
