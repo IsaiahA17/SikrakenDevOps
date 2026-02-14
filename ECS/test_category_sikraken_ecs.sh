@@ -16,7 +16,7 @@ ls /shared/benchmarks
 
 S3_BUCKET_NAME="ecs-benchmarks-output"
 S3_BUCKET="${S3_BUCKET_NAME:?S3_BUCKET not set}"
-CORES="${CORES:-4}"
+CORES="${CORES:-1}"
 STACK_SIZE_GB="${STACK_SIZE_GB:-3}"
 CATEGORY="${CATEGORY:-chris}"
 MODE="${MODE:-release}"

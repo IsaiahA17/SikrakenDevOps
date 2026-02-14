@@ -6,6 +6,7 @@ TASK_DEF="${2:-${TASK_DEF:-sikraken-benchmarks-task-def}}"
 TASK_COUNT="${3:-${TASK_COUNT:-5}}"
 CATEGORY="${4:-${CATEGORY:-chris}}"
 BUDGET="${5:-${BUDGET:-10}}"
+MODE="${6:-${MODE:-release}}"
 
 SUBNET_ARRAY=(subnet-00575f764f10645c4 subnet-0d48c3c69206076d1 subnet-0a693be6424dd272a)
 SG="sg-0b94b75a72c6f0356"
@@ -28,6 +29,7 @@ launch_shard() {
               \"environment\": [
                 {\"name\": \"CATEGORY\", \"value\": \"$CATEGORY\"},
                 {\"name\": \"BUDGET\", \"value\": \"$BUDGET\"},
+                {\"name\": \"MODE\", \"value\": \"$MODE\"},
                 {\"name\": \"TASK_INDEX\", \"value\": \"$TASK_INDEX\"},
                 {\"name\": \"TASK_COUNT\", \"value\": \"$TASK_COUNT\"}
               ]
