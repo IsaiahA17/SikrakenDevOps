@@ -33,8 +33,8 @@
             "essential": true,
             "environment": [
                 {
-                    "name": "S3_BUCKET",
-                    "value": "ecs-benchmark-output"
+                    "name": "TIMESTAMP",
+                    "value": "0"
                 },
                 {
                     "name": "CORES",
