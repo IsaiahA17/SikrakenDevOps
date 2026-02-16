@@ -104,7 +104,7 @@
     "cpu": "1024",
     "memory": "3072",
     "ephemeralStorage": {
-        "sizeInGiB": 60
+        "sizeInGiB": 20
     },
     "runtimePlatform": {
         "cpuArchitecture": "X86_64",
