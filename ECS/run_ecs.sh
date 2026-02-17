@@ -14,7 +14,7 @@ SG="sg-0b94b75a72c6f0356"
 
 TASK_ARNS=()
 
-launch_shard() {
+launch_task() {
     local TASK_INDEX=$1
     local SUBNET=${SUBNET_ARRAY[$((TASK_INDEX % ${#SUBNET_ARRAY[@]}))]}
 
@@ -47,29 +47,29 @@ launch_shard() {
     TASK_ARN=$(echo "$OUT" | jq -r '.tasks[0].taskArn // empty')
 
     if [[ -n "$TASK_ARN" ]]; then
-        echo "shard $TASK_INDEX Accepted: $TASK_ARN"
+        echo "task $TASK_INDEX Accepted: $TASK_ARN"
         TASK_ARNS+=("$TASK_ARN")
         return 0
     else
-        echo "shard $TASK_INDEX Rejected: $(echo "$OUT" | jq -r '.failures')"
+        echo "task $TASK_INDEX Rejected: $(echo "$OUT" | jq -r '.failures')"
         return 1
     fi
 }
 
-echo "Starting launch of $TASK_COUNT shards..."
+echo "Starting launch of $TASK_COUNT tasks..."
 
 for ((i=0; i<TASK_COUNT; i++)); do
     while true; do
-        if launch_shard "$i"; then
+        if launch_task "$i"; then
             break
         else
-            echo "Retrying shard $i in 1s..."
+            echo "Retrying task $i in 1s..."
             sleep 1
         fi
     done
     sleep 0.2
 done
 
-echo "All shards submitted successfully!"
+echo "All tasks submitted successfully!"
 
 echo "TASK_ARNS=${TASK_ARNS[*]}"
