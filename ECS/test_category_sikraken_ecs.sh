@@ -154,7 +154,7 @@ retrieve_category_file(){
         echo "Sikraken $script_name log: Using the exclude set: "$exclude_set""
     fi
 
-    echo "Sikraken $script_name log: called: "$script_name $@""
+    echo "Sikraken $script_name log: called: $script_name $@"
 }
 retrieve_category_file()
 
@@ -236,7 +236,7 @@ category_extracted_benchmarks_files="$output_dir"/benchmark_files.txt  #output l
 log_file="$output_dir"/category_test_run.log
 
 #printf -v orig_cmd '%q ' "${ORIG_ARGV[@]}"
-echo "Command Used to Generate the Category Test run: ${orig_cmd% }" >> "$log_file"
+#echo "Command Used to Generate the Category Test run: ${orig_cmd% }" >> "$log_file"
 echo "Timestamp: $TIMESTAMP" >> $log_file
 echo "Category: $category" >> $log_file
 echo "Mode: $mode" >> $log_file
