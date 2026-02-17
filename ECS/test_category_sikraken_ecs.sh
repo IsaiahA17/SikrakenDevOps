@@ -1,14 +1,24 @@
 #!/bin/bash
+#
+# Script: test_category_sikraken_ecs.sh
+# Author: Chris Meudec
+# Modified By: Isaiah Andres
+# Started: May 2025 (Major update: Oct 2025 for parallel error handling)
+# Modified On: Feb 2026
+# Description: This is a modified version of an existing script test_category_sikraken.sh to be single threaded so that it may work in an ECS Fargate cluster.
+#              Most features and options have been removed by commenting them out as the focus for now is on measuring the performance but have been kept 
+#              in case further development may be necessary, so comments explaining other features have been removed until added again.
+# The <category>.set file are in sv-benchmarks/c directory or can be user-defined
+# Outputs logs files into directory within a shared volume with a docker container /shared/output
+# Takes into account possible exclude set for ECA
+# For each benchmark: generate tests, upload log to S3 Bucket
+
 # Example: ./SikrakenDevSpace/bin/test_category_sikraken.sh /home/chris/sv-benchmarks/c ECA 8 30 debug --ss=5
 
 clear
 
 echo "Starting Sikraken ECS run..."
 
-echo "Waiting for benchmarks to be fully copied..."
-#while [ ! -f /shared/benchmarks/.complete ]; do
-#    sleep 1
-#done
 echo "All benchmarks are present."
 
 echo "Benchmarks content in /shared/benchmarks:"
@@ -21,7 +31,7 @@ STACK_SIZE_GB="${STACK_SIZE_GB:-3}"
 CATEGORY="${CATEGORY:-chris}"
 MODE="${MODE:-release}"
 BUDGET="${BUDGET:-10}"
-TIMESTAMP="${TIMESTAMP:-$(date -u +"%Y_%m_%d_%H_%M")}"
+TIMESTAMP="${TIMESTAMP:?TIMESTAMP environment variable not set}"
 
 TASK_COUNT="${TASK_COUNT:-1}"   
 TASK_INDEX="${TASK_INDEX:-0}"   
@@ -105,59 +115,70 @@ echo "mode               = $mode"
 echo "shortcutgen        = $shortcutgen"
 echo "no_testcov         = $no_testcov"
 
-# Check if the path_to_benchmarks exists
-if [ ! -d "$path_to_benchmarks" ]; then
-    echo "Sikraken ERROR from $script_name: the passed path to category $path_to_benchmarks does not exist."
-    exit 1
-fi
-
-category_file="$category".set   #input file describing the category
-local_category_path="$SIKRAKEN_INSTALL_DIR/categories/"
-# 1. Check local directory (e.g. for non-Test-Comp sets such as chris.set)
-full_path_to_category_file="$local_category_path/$category_file"
-if [ -f "$full_path_to_category_file" ]; then
-    echo "Using local category file: $full_path_to_category_file"
-# 2. Check path from argument instead
-elif [ -f "$path_to_benchmarks/$category_file" ]; then
-    full_path_to_category_file="$path_to_benchmarks/$category_file"
-    echo "Using argument path category file: $full_path_to_category_file"
-# 3. File not found in either location
-else
-    echo "Sikraken ERROR from $script_name: The category file '$category_file' was not found in either"
-    echo "  - Local Path: $local_category_path"
-    echo "  - Argument Path: $path_to_benchmarks"
-    exit 1
-fi
-
-# Define exclusion set for ECA
-exclude_set=""
-if [ $category == "ECA" ]; then
-    exclude_set="$SCRIPT_DIR/../ECA-excludes.set"   # local copy, actual exclude file (only category for which there is one) is at https://gitlab.com/sosy-lab/test-comp/bench-defs/-/tree/testcomp25/benchmark-defs/excludes?ref_type=tags 
-    if [ ! -f "$exclude_set" ]; then
-        echo "Sikraken ERROR from $script_name: Exclusion set $exclude_set does not exist."
+check_benchmarks_path(){
+    # Check if the path_to_benchmarks exists
+    if [ ! -d "$path_to_benchmarks" ]; then
+        echo "Sikraken ERROR from $script_name: the passed path to category $path_to_benchmarks does not exist."
         exit 1
     fi
-    echo "Sikraken $script_name log: Using the exclude set: "$exclude_set""
-fi
+}
+check_benchmarks_path()
 
-echo "Sikraken $script_name log: called: "$script_name $@""
+retrieve_category_file(){
+    category_file="$category".set   #input file describing the category
+    local_category_path="$SIKRAKEN_INSTALL_DIR/categories/"
+    # 1. Check local directory (e.g. for non-Test-Comp sets such as chris.set)
+    full_path_to_category_file="$local_category_path/$category_file"
+    if [ -f "$full_path_to_category_file" ]; then
+        echo "Using local category file: $full_path_to_category_file"
+    # 2. Check path from argument instead
+    elif [ -f "$path_to_benchmarks/$category_file" ]; then
+        full_path_to_category_file="$path_to_benchmarks/$category_file"
+        echo "Using argument path category file: $full_path_to_category_file"
+    # 3. File not found in either location
+    else
+        echo "Sikraken ERROR from $script_name: The category file '$category_file' was not found in either"
+        echo "  - Local Path: $local_category_path"
+        echo "  - Argument Path: $path_to_benchmarks"
+        exit 1
+    fi
 
-# re-compile the parser in case it changed during development
-$SIKRAKEN_INSTALL_DIR/bin/compile_parser.sh
-if [ $? -ne 0 ]; then
-    echo "Sikraken ERROR from $script_name: ERROR: Sikraken parser recompilation failed"
-    exit 1
-else
-    echo "Sikraken $script_name log: Sikraken parser successfully recompiled"
-fi
+    # Define exclusion set for ECA
+    exclude_set=""
+    if [ $category == "ECA" ]; then
+        exclude_set="$SCRIPT_DIR/../ECA-excludes.set"   # local copy, actual exclude file (only category for which there is one) is at https://gitlab.com/sosy-lab/test-comp/bench-defs/-/tree/testcomp25/benchmark-defs/excludes?ref_type=tags 
+        if [ ! -f "$exclude_set" ]; then
+            echo "Sikraken ERROR from $script_name: Exclusion set $exclude_set does not exist."
+            exit 1
+        fi
+        echo "Sikraken $script_name log: Using the exclude set: "$exclude_set""
+    fi
 
-output_dir="$OUTPUT_SHARED/$TIMESTAMP"
-echo "The output dir is $output_dir"
-mkdir -p "$output_dir"
+    echo "Sikraken $script_name log: called: "$script_name $@""
+}
+retrieve_category_file()
 
-# function: generate_tests_and_call_testcov runs single threaded for ECS
+compile_parser(){
+    # re-compile the parser in case it changed during development
+    $SIKRAKEN_INSTALL_DIR/bin/compile_parser.sh
+    if [ $? -ne 0 ]; then
+        echo "Sikraken ERROR from $script_name: ERROR: Sikraken parser recompilation failed"
+        exit 1
+    else
+        echo "Sikraken $script_name log: Sikraken parser successfully recompiled"
+    fi
+}
+compile_parser()
+
+set_output_directory(){
+    output_dir="$OUTPUT_SHARED/$TIMESTAMP"
+    echo "The output dir is $output_dir"
+    mkdir -p "$output_dir"
+}
+set_output_directory()
+# function: generate_tests runs single threaded for ECS
 # and terminated with 'return 1' instead of 'exit 1'.
-generate_tests_and_call_testcov() {
+generate_tests() {
     local benchmark="$1"
     local gcc_flag="$2"
     local testcov_data_model="$3"
@@ -214,81 +235,83 @@ start_ts=$(date +%s)
 category_extracted_benchmarks_files="$output_dir"/benchmark_files.txt  #output list of benchmarks for the category
 log_file="$output_dir"/category_test_run.log
 
-printf -v orig_cmd '%q ' "${ORIG_ARGV[@]}"
+#printf -v orig_cmd '%q ' "${ORIG_ARGV[@]}"
 echo "Command Used to Generate the Category Test run: ${orig_cmd% }" >> "$log_file"
-echo "Timestamp: $timestamp" >> $log_file
+echo "Timestamp: $TIMESTAMP" >> $log_file
 echo "Category: $category" >> $log_file
 echo "Mode: $mode" >> $log_file
 echo "Budget: $budget" >> $log_file
 echo "Cores: $cores" >> $log_file
 echo "Options: shortcutgen: $shortcutgen_flag, no_testcov: $no_testcov" >> $log_file
 
-mapfile -t PATTERNS < <(
-    grep -o '.*\/.*\.yml' "$full_path_to_category_file" | sort
-)
+run_benchmark(){
+    mapfile -t PATTERNS < <(
+        grep -o '.*\/.*\.yml' "$full_path_to_category_file" | sort
+    )
 
-if (( TASK_INDEX >= TASK_COUNT )); then
-    echo "ERROR: TASK_INDEX ($TASK_INDEX) >= TASK_COUNT ($TASK_COUNT)"
-    exit 1
-fi
-
-for i in "${!PATTERNS[@]}"; do
-    if (( i % TASK_COUNT != TASK_INDEX )); then
-        continue
+    if (( TASK_INDEX >= TASK_COUNT )); then
+        echo "ERROR: TASK_INDEX ($TASK_INDEX) >= TASK_COUNT ($TASK_COUNT)"
+        exit 1
     fi
 
-    pattern_benchmark_directory="${PATTERNS[$i]}"
-    echo "Shard $TASK_INDEX processing pattern: $pattern_benchmark_directory"
-
-    for yml_file in "$path_to_benchmarks"/$pattern_benchmark_directory; do
-        # Exclude files listed in the exclusion set
-        if [ -n "$exclude_set" ] && grep -Fxq "$yml_file" "$exclude_set"; then
-            # echo "Sikraken $script_name log: skipping excluded file: $yml_file"
+    for i in "${!PATTERNS[@]}"; do
+        if (( i % TASK_COUNT != TASK_INDEX )); then
             continue
         fi
-        echo "yml_file is $yml_file"
-        if [ -f "$yml_file" ]; then
-            # Check if the file contains the required property_file line
-            if grep -qE "^\s*- property_file: \.\./properties/coverage-branches\.prp$" "$yml_file"; then
-                echo -e "${YL}Sikraken $script_name log: extracting benchmark file from $yml_file${NC}"
 
-                # Extract the input file (match "input_files: <filename>" for .c or .i files)
-                benchmark=$(grep "input_files:" "$yml_file" | sed -n "s/^[[:space:]]*input_files:[[:space:]]*\(['\"]\?\)\(.*\)\1/\2/p")
+        pattern_benchmark_directory="${PATTERNS[$i]}"
 
-                # Extract the data model
-                data_model=$(grep "data_model:" "$yml_file" | sed -n "s/^[[:space:]]*data_model:[[:space:]]*\(.*\)/\1/p")
+        for yml_file in "$path_to_benchmarks"/$pattern_benchmark_directory; do
+            # Exclude files listed in the exclusion set
+            if [ -n "$exclude_set" ] && grep -Fxq "$yml_file" "$exclude_set"; then
+                # echo "Sikraken $script_name log: skipping excluded file: $yml_file"
+                continue
+            fi
+            echo "yml_file is $yml_file"
+            if [ -f "$yml_file" ]; then
+                # Check if the file contains the required property_file line
+                if grep -qE "^\s*- property_file: \.\./properties/coverage-branches\.prp$" "$yml_file"; then
+                    echo -e "${YL}Sikraken $script_name log: extracting benchmark file from $yml_file${NC}"
 
-                # Generate GCC flag based on the value of data_model
-                if [ "$data_model" == "ILP32" ]; then
-                    gcc_flag="-m32"
-                    testcov_data_model="-32"
-                elif [ "$data_model" == "LP64" ]; then
-                    gcc_flag="-m64"
-                    testcov_data_model="-64"
-                else
-                    echo "Sikraken ERROR from $script_name: unsupported data model: $data_model"
-                    exit 1
-                fi
-                full_path_benchmark_file="$(dirname "$yml_file")/$benchmark"
-                # write each file in the benchmark category into $category_extracted_benchmarks_files used for table generation
-                echo "$full_path_benchmark_file $testcov_data_model" >> $category_extracted_benchmarks_files
-            
-                generate_tests_and_call_testcov "$full_path_benchmark_file" "$gcc_flag" "$testcov_data_model" 
-            fi  # if the .yml file does not contain the correct property, it is silently skipped
-        fi
-    done #no more *.yml file
-done
+                    # Extract the input file (match "input_files: <filename>" for .c or .i files)
+                    benchmark=$(grep "input_files:" "$yml_file" | sed -n "s/^[[:space:]]*input_files:[[:space:]]*\(['\"]\?\)\(.*\)\1/\2/p")
 
-# Capture human-readable time and Unix timestamp for end
-end_wall_time=$(date +"%Y-%m-%d %H:%M:%S")
-end_ts=$(date +%s)
-echo "Sikraken $script_name: Start Wall Time: $start_wall_time"
-echo "Sikraken $script_name: End Wall Time: $end_wall_time"
-duration_seconds=$((end_ts - start_ts))
-duration_hms=$(date -u -d @"$duration_seconds" +"%H:%M:%S")
-echo "Sikraken $script_name: Duration: $duration_hms"
-echo "Duration: $duration_hms" >> $log_file
+                    # Extract the data model
+                    data_model=$(grep "data_model:" "$yml_file" | sed -n "s/^[[:space:]]*data_model:[[:space:]]*\(.*\)/\1/p")
 
+                    # Generate GCC flag based on the value of data_model
+                    if [ "$data_model" == "ILP32" ]; then
+                        gcc_flag="-m32"
+                        testcov_data_model="-32"
+                    elif [ "$data_model" == "LP64" ]; then
+                        gcc_flag="-m64"
+                        testcov_data_model="-64"
+                    else
+                        echo "Sikraken ERROR from $script_name: unsupported data model: $data_model"
+                        exit 1
+                    fi
+                    full_path_benchmark_file="$(dirname "$yml_file")/$benchmark"
+                    # write each file in the benchmark category into $category_extracted_benchmarks_files used for table generation
+                    echo "$full_path_benchmark_file $testcov_data_model" >> $category_extracted_benchmarks_files
+                
+                    generate_tests "$full_path_benchmark_file" "$gcc_flag" "$testcov_data_model" 
+                fi  # if the .yml file does not contain the correct property, it is silently skipped
+            fi
+        done #no more *.yml file
+    done
+
+    # Capture human-readable time and Unix timestamp for end
+    end_wall_time=$(date +"%Y-%m-%d %H:%M:%S")
+    end_ts=$(date +%s)
+    echo "Sikraken $script_name: Start Wall Time: $start_wall_time"
+    echo "Sikraken $script_name: End Wall Time: $end_wall_time"
+    duration_seconds=$((end_ts - start_ts))
+    duration_hms=$(date -u -d @"$duration_seconds" +"%H:%M:%S")
+    echo "Sikraken $script_name: Duration: $duration_hms"
+    echo "Duration: $duration_hms" >> $log_file
+}
+
+run_benchmark()
 #generate_table_script="$SIKRAKEN_INSTALL_DIR/SikrakenDevSpace/bin/helper/create_category_test_run_table.sh $output_dir"
 #echo "Sikraken $script_name: now calling $generate_table_script"
 #$generate_table_script
@@ -298,15 +321,18 @@ echo "Duration: $duration_hms" >> $log_file
 #echo "Sikraken $script_name log: now calling $generate_summary"
 #$generate_summary
 
-S3_PREFIX="s3://${S3_BUCKET}/${CATEGORY}/${TIMESTAMP}"
-echo "$S3_PREFIX"
-aws s3 sync "$output_dir" "$S3_PREFIX" --exclude "*.i" --exclude "*.log"
+upload_to_s3(){
+    S3_PREFIX="s3://${S3_BUCKET}/${CATEGORY}/${TIMESTAMP}"
+    echo "$S3_PREFIX"
+    aws s3 sync "$output_dir" "$S3_PREFIX" --exclude "*.i" --exclude "*.log"
 
-# Upload .i and .log files with text/plain content-type
-aws s3 sync "$output_dir" "$S3_PREFIX" \
-    --exclude "*" \
-    --include "*.i" \
-    --include "*.log" \
-    --content-type text/plain
+    # Upload .i and .log files with text/plain content-type
+    aws s3 sync "$output_dir" "$S3_PREFIX" \
+        --exclude "*" \
+        --include "*.i" \
+        --include "*.log" \
+        --content-type text/plain
 
-echo "Sikraken $script_name log: has ended."
+    echo "Sikraken $script_name log: has ended."
+}
+upload_to_s3()
