@@ -3,7 +3,7 @@
     "containerDefinitions": [
         {
             "name": "benchmarks-container",
-            "image": "713141626063.dkr.ecr.eu-west-1.amazonaws.com/sikraken/image-repo@sha256:dc3607f0c962004d9f141cce7962b0fb33150740358dda651072c5b4f64bf775",
+            "image": "713141626063.dkr.ecr.eu-west-1.amazonaws.com/sikraken/image-repo@sha256:8148ff87681fc8f970c7ec5b201a511e568c7e671aec6d87662aee9c81ca8c52",
             "cpu": 0,
             "portMappings": [],
             "essential": false,
