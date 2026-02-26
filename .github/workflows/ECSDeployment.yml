@@ -71,11 +71,21 @@ jobs:
           task-definition: ${{ vars.ECS_TASK_DEFINITION_PATH }}
           container-name: ${{ vars.CONTAINER_NAME }}
           image: ${{ steps.build-image.outputs.image }}
+          environment-variables: "STACK_SIZE_GB=${{ vars.TASK_MEMORY }}"
+
+      - name: Override Task Memory
+        id: override-memory
+        run: |
+          jq '.memory = "${{ vars.TASK_MEMORY }}"' \
+            "${{ steps.task-def.outputs.task-definition }}" \
+            > task-def-updated.json
+      
+          echo "task-def=task-def-updated.json" >> $GITHUB_OUTPUT
 
       - name: Register New Task
         id: register-task
         run: |
-          echo "task-def=$(aws ecs register-task-definition --cli-input-json file://${{ steps.task-def.outputs.task-definition }} --query 'taskDefinition.taskDefinitionArn' --output text)" >>$GITHUB_OUTPUT
+          echo "task-def=$(aws ecs register-task-definition --cli-input-json file://${{ steps.override-memory.outputs.task-def }} --query 'taskDefinition.taskDefinitionArn' --output text)" >>$GITHUB_OUTPUT
         
       - name: Execute ECS Tasks
         id: execute-ecs
