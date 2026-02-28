@@ -1,0 +1,53 @@
+name: Bash Script Test
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  #push:
+   # branches: [ "main" ]
+  #pull_request:
+   # branches: [ "main" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+  
+permissions:
+  id-token: write #Write permission required to authenticate with OIDC
+  
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  CreateCategoryReport:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Current Repo
+        uses: actions/checkout@v6
+        with:
+          repository: IsaiahA17/SikrakenDevOps
+          path: SikrakenDevOps
+
+      #Retrieving all category results, will find specific one if too slow
+      - name: Download Category Results From S3
+        run: |
+          mkdir -p category_results
+          aws s3 cp s3://${{ secrets.S3_BUCKET_NAME }}/${{ vars.CATEGORY }}/category_results/ --recursive
+
+      - name: Make Report Script Executable
+        run: |
+          chmod +x SikrakenDevOps/ReportScripts/create_category_test_run_table.sh
+
+      - name: Generate HTML Report
+        run: |
+          # Find the latest timestamp directory
+          TIMESTAMP_DIR=$(find category_results -mindepth 1 -maxdepth 1 -type d | head -n 1)
+          echo "Timestamp dir: $TIMESTAMP_DIR"
+
+          SikrakenDevOps/ReportScripts/create_category_test_run_table.sh "$TIMESTAMP_DIR"
+
+          echo "timestamp_dir=$TIMESTAMP_DIR" >> $GITHUB_OUTPUT
+        id: generate-report
+
+      - name: Upload Report HTML To S3
+        run: |
+          TIMESTAMP_DIR="${{ steps.generate-report.outputs.timestamp_dir }}"
+          aws s3 cp "$TIMESTAMP_DIR/category_test_run_results.html" \
+            s3://${{ vars.RESULTS_BUCKET }}/${{ vars.CATEGORY }}/category_test_run_results.html
