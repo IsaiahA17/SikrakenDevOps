@@ -18,6 +18,7 @@ permissions:
 jobs:
   CreateCategoryReport:
     runs-on: ubuntu-latest
+    environment: ECS
     steps:
       - name: Checkout Current Repo
         uses: actions/checkout@v6
