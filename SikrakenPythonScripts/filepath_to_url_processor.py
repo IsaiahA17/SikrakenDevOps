@@ -59,7 +59,7 @@ def main():
     parser.add_argument('--category', type=str, required=True, help="Test Run Category")
 
     args = parser.parse_args()
-    result = process_html_file(args.input_dir, args.run_folder, args.s3_bucket, category)
+    result = process_html_file(args.input_dir, args.run_folder, args.s3_bucket, args.category)
 
     print(result['body'])
 
