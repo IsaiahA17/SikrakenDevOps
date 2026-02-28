@@ -42,6 +42,9 @@ jobs:
         run: |
           chmod +x SikrakenDevOps/ReportScripts/create_category_test_run_table.sh
 
+      - name: List Directories
+        run: ls category_results
+          
       - name: Generate HTML Report
         run: |
           # Find the latest timestamp directory
@@ -57,4 +60,4 @@ jobs:
         run: |
           TIMESTAMP_DIR="${{ steps.generate-report.outputs.timestamp_dir }}"
           aws s3 cp "$TIMESTAMP_DIR/category_test_run_results.html" \
-            s3://${{ vars.RESULTS_BUCKET }}/${{ vars.CATEGORY }}/category_test_run_results.html
+            s3://${{ vars.S3_BUCKET_NAME }}/${{ vars.CATEGORY }}/category_test_run_results.html
