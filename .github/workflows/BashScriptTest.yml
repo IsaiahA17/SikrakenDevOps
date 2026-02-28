@@ -64,7 +64,7 @@ jobs:
         run: |
           TIMESTAMP_DIR="${{ steps.generate-report.outputs.timestamp_dir }}"
           TIMESTAMP_NAME=$(basename "$TIMESTAMP_DIR")
-          python SikrakenDevOps/SikrakenPythonScripts/filepath_to_url_processor.py "$TIMESTAMP_DIR" --run_folder "$TIMESTAMP_NAME"
+          python SikrakenDevOps/SikrakenPythonScripts/filepath_to_url_processor.py "$TIMESTAMP_DIR" --run_folder "$TIMESTAMP_NAME" --s3_bucket "{{ secrets.S3_BUCKET_NAME }}"
 
       - name: Upload Report HTML To S3
         run: |
