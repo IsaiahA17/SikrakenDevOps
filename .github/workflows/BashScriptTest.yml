@@ -26,6 +26,12 @@ jobs:
           repository: IsaiahA17/SikrakenDevOps
           path: SikrakenDevOps
 
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.EC2_ACCESS_ROLE_ARN }}
+          aws-region: eu-west-1
+
       #Retrieving all category results, will find specific one if too slow
       - name: Download Category Results From S3
         run: |
