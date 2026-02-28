@@ -48,7 +48,6 @@ jobs:
       - name: Generate HTML Report
         run: |
           TIMESTAMP_DIR=$(find category_results -mindepth 1 -maxdepth 1 -type d -printf "%f\n" | sort -r | head -n 1)
-          TIMESTAMP_DIR="category_results/$TIMESTAMP_DIR"
           cat $TIMESTAMP_DIR/benchmark_files/* > $TIMESTAMP_DIR/benchmark_files.txt
           
           echo "Timestamp dir: $TIMESTAMP_DIR"
