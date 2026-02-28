@@ -11,7 +11,7 @@ def replace_local_paths_with_s3(html_content, run_folder):
 
     pattern = r'href="(?!https?://)([^"]+)"' #Regex for detecting href and doesn't already contain https
 
-    def repl(match): #Matches by the pattern are used as a parameter in this function once they're found
+    def replace_path(match): #Matches by the pattern are used as a parameter in this function once they're found
         path = match.group(1) #Using first match 
 
         if path.startswith("file://"):
@@ -25,7 +25,7 @@ def replace_local_paths_with_s3(html_content, run_folder):
         relative_path = f"{run_folder}/{problem_folder}/{filename}" #Combining the name e.g 2025_11_17_19_00/Problem03_label00/Problem03_label00.i
         return f'href="{s3_url}/{relative_path}"' #Adding to S3 url
 
-    return re.sub(pattern, repl, html_content) #Scans for the pattern in html_content and then calls repl to process the filepath with each pattern found
+    return re.sub(pattern, replace_path, html_content) #Scans for the pattern in html_content and then calls replace_path to process the filepath with each pattern found
 
 def process_html_file(input_dir, run_folder):
     input_dir_path = Path(input_dir)
