@@ -59,6 +59,6 @@ jobs:
       - name: Upload Report HTML To S3
         run: |
           TIMESTAMP_DIR="${{ steps.generate-report.outputs.timestamp_dir }}"
-          ls TIMESTAMP_DIR
+          ls $TIMESTAMP_DIR
           aws s3 cp "$TIMESTAMP_DIR/category_test_run_results.html" \
             s3://${{ secrets.S3_BUCKET_NAME }}/${{ vars.CATEGORY }}/$TIMESTAMP_DIR/category_test_run_results.html
