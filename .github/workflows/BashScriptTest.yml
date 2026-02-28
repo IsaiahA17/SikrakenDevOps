@@ -60,6 +60,12 @@ jobs:
           echo "timestamp_dir=$TIMESTAMP_DIR" >> $GITHUB_OUTPUT
         id: generate-report
 
+      - name: Replace File Paths With S3 URLs
+        run: |
+          TIMESTAMP_DIR="${{ steps.generate-report.outputs.timestamp_dir }}"
+          TIMESTAMP_NAME=$(basename "$TIMESTAMP_DIR")
+          python SikrakenDevOps/path_to_your_script.py "$TIMESTAMP_DIR" --run_folder "$TIMESTAMP_NAME"
+
       - name: Upload Report HTML To S3
         run: |
           TIMESTAMP_DIR="${{ steps.generate-report.outputs.timestamp_dir }}"
