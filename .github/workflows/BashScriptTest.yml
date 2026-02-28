@@ -30,7 +30,7 @@ jobs:
       - name: Download Category Results From S3
         run: |
           mkdir -p category_results
-          aws s3 cp s3://${{ secrets.S3_BUCKET_NAME }}/${{ vars.CATEGORY }}/category_results/ --recursive
+          aws s3 cp s3://${{ secrets.S3_BUCKET_NAME }}/${{ vars.CATEGORY }}/ category_results/ --recursive
 
       - name: Make Report Script Executable
         run: |
