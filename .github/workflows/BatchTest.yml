@@ -93,6 +93,12 @@ jobs:
             fi
             sleep 60
           done
+
+      - name: Estimate Batch Job Cost
+        run: |
+          chmod +x SikrakenDevOps/Batch/estimate_batch_cost.sh
+          PARENT_JOB_ID="${{ steps.submit_batch_job.outputs.job_id }}"
+          SikrakenDevOps/Batch/estimate_batch_cost.sh "$PARENT_JOB_ID"
           
   InvokeLambda:
       environment: Batch
