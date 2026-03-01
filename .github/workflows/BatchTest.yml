@@ -93,49 +93,11 @@ jobs:
             fi
             sleep 60
           done
-
+        
   CreateCategoryReport:
+    needs: [CheckoutRepositories]
     runs-on: ubuntu-latest
     environment: Batch
-    steps:
-      - name: Checkout Current Repo
-        uses: actions/checkout@v6
-        with:
-          repository: IsaiahA17/SikrakenDevOps
-          path: SikrakenDevOps
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.EC2_ACCESS_ROLE_ARN }}
-          aws-region: eu-west-1
-
-      #Retrieving all category results, will find specific one if too slow
-      - name: Download Category Results From S3
-        run: |
-          mkdir -p category_results
-          aws s3 cp s3://${{ vars.S3_BUCKET_NAME }}/${{ vars.CATEGORY }}/ category_results/ --recursive
-      - name: Make Report Script Executable
-        run: |
-          chmod +x SikrakenDevOps/ReportScripts/create_category_test_run_table.sh
-      - name: List Directories
-        run: ls category_results
-          
-      - name: Generate HTML Report
-        run: |
-          TIMESTAMP_DIR=$(find category_results -mindepth 1 -maxdepth 1 -type d -regextype posix-extended -regex ".*/[0-9]{4}_[0-9]{2}_[0-9]{2}_[0-9]{2}_[0-9]{2}" | sort | tail -n1)
-          echo $TIMESTAMP_DIR
-          ls $TIMESTAMP_DIR/benchmark_files
-          touch $TIMESTAMP_DIR/benchmark_files.txt
-          cat $TIMESTAMP_DIR/benchmark_files/* > $TIMESTAMP_DIR/benchmark_files.txt
-          
-          echo "Timestamp dir: $TIMESTAMP_DIR"
-          SikrakenDevOps/ReportScripts/create_category_test_run_table.sh "$TIMESTAMP_DIR"
-          echo "timestamp_dir=$TIMESTAMP_DIR" >> $GITHUB_OUTPUT
-        id: generate-reportjobs:
-  CreateCategoryReport:
-    runs-on: ubuntu-latest
-    environment: ECS
     steps:
       - name: Checkout Current Repo
         uses: actions/checkout@v6
@@ -178,34 +140,16 @@ jobs:
           TIMESTAMP_DIR="${{ steps.generate-report.outputs.timestamp_dir }}"
           TIMESTAMP_NAME=$(basename "$TIMESTAMP_DIR")
           python SikrakenDevOps/SikrakenPythonScripts/filepath_to_url_processor.py "$TIMESTAMP_DIR" --run_folder "$TIMESTAMP_NAME" --s3_bucket "${{ vars.S3_BUCKET_NAME }}" --category "${{ vars.CATEGORY }}"
+      
       - name: Upload Report HTML To S3
         run: |
           TIMESTAMP_DIR="${{ steps.generate-report.outputs.timestamp_dir }}"
           TIMESTAMP_NAME=$(basename "$TIMESTAMP_DIR")
           aws s3 cp "$TIMESTAMP_DIR/category_test_run_results.html" \
             s3://${{ vars.S3_BUCKET_NAME }}/${{ vars.CATEGORY }}/$TIMESTAMP_NAME/category_test_run_results.html --content-type text/html
-      - name: Invoke Lambda Function For Processing
-        run: |
-          aws lambda invoke --function-name ${{ secrets.LAMBDA_NAME }} \
-          --cli-binary-format raw-in-base64-out \
-          --payload '{ "Category": "${{ vars.CATEGORY }}", "Bucket": "${{ vars.S3_BUCKET_NAME }}" }' response.json
-          cat response.json
-          URL=$(jq -r '.body | fromjson | .url' response.json) #Using the jq JSON command line processor to isolate the value of the url key
-          echo "$URL" | awk -F '?' '{print $1}' #Using the text processor awk to try and remove the unnecessary parts of the html url
-
-      - name: Replace File Paths With S3 URLs
-        run: |
-          TIMESTAMP_DIR="${{ steps.generate-report.outputs.timestamp_dir }}"
-          TIMESTAMP_NAME=$(basename "$TIMESTAMP_DIR")
-          python SikrakenDevOps/SikrakenPythonScripts/filepath_to_url_processor.py "$TIMESTAMP_DIR" --run_folder "$TIMESTAMP_NAME" --s3_bucket "${{ vars.S3_BUCKET_NAME }}" --category "${{ vars.CATEGORY }}"
-      - name: Upload Report HTML To S3
-        run: |
-          TIMESTAMP_DIR="${{ steps.generate-report.outputs.timestamp_dir }}"
-          TIMESTAMP_NAME=$(basename "$TIMESTAMP_DIR")
-          aws s3 cp "$TIMESTAMP_DIR/category_test_run_results.html" \
-            s3://${{ vars.S3_BUCKET_NAME }}/${{ vars.CATEGORY }}/$TIMESTAMP_NAME/category_test_run_results.html --content-type text/html
-  
+      
   InvokeLambda:   
+    needs: [CheckoutRepositories, CreateCategoryReport]
     runs-on: ubuntu-latest
     environment: Batch
     steps:
