@@ -6,7 +6,7 @@ from pathlib import Path
 
 def replace_local_paths_with_s3(html_content, run_folder, s3_bucket, category):
     run_folder = run_folder.rstrip("/")  #Removing forward slash at end of folder name 
-    s3_url = f"https://{category}/{s3_bucket}.s3.eu-west-1.amazonaws.com"
+    s3_url = f"https://{s3_bucket}.s3.eu-west-1.amazonaws.com"
 
     pattern = r'href="(?!https?://)([^"]+)"' #Regex for detecting href and doesn't already contain https
 
@@ -21,7 +21,7 @@ def replace_local_paths_with_s3(html_content, run_folder, s3_bucket, category):
         filename = p.name #Getting file name
         problem_folder = p.parent.name #Getting parent folder name to match object format in S3
 
-        relative_path = f"{run_folder}/{problem_folder}/{filename}" #Combining the name e.g 2025_11_17_19_00/Problem03_label00/Problem03_label00.i
+        relative_path = f"{category}/{run_folder}/{problem_folder}/{filename}" #Combining the name e.g ECA/2025_11_17_19_00/Problem03_label00/Problem03_label00.i
         return f'href="{s3_url}/{relative_path}"' #Adding to S3 url
 
     return re.sub(pattern, replace_path, html_content) #Scans for the pattern in html_content and then calls replace_path to process the filepath with each pattern found
