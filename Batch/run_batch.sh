@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-JOB_QUEUE="${1:-${JOB_QUEUE:-sikraken-queue}}"
-JOB_DEFINITION="${2:-${JOB_DEFINITION:-sikraken-benchmarks}}"
+JOB_QUEUE="${1:-${JOB_QUEUE:-sikraken-test-comp-job-queue}}"
+JOB_DEFINITION="${2:-${JOB_DEFINITION:-sikraken-test-comp-batch-job-def}}"
 TASK_COUNT="${3:-${TASK_COUNT:-5}}"
 CATEGORY="${4:-${CATEGORY:-chris}}"
 BUDGET="${5:-${BUDGET:-10}}"
