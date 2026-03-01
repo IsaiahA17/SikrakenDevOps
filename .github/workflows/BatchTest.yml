@@ -75,7 +75,7 @@ jobs:
         id: submit_batch_job
         run: |
           chmod +x SikrakenDevOps/Batch/run_batch.sh 
-          JOB_ID=$(SikrakenDevOps/Batch/run_batch.sh "${{ secrets.JOB_QUEUE_ARN }}" "${{ vars.JOB_DEFINITION }}" "${{ vars.TASK_COUNT }}" "${{ vars.CATEGORY }}" "${{ vars.BUDGET }}" "${{ vars.MODE }}")
+          JOB_ID=$(SikrakenDevOps/Batch/run_batch.sh "${{ secrets.JOB_QUEUE_ARN }}" "${{ vars.JOB_DEFINITION }}" "${{ vars.TASK_COUNT }}" "${{ vars.CATEGORY }}" "${{ vars.BUDGET }}" "${{ vars.MODE }}" "${{ vars.TASK_MEMORY }}")
           echo "job_id=$JOB_ID" >> $GITHUB_OUTPUT
           
       - name: Wait For Job Completion
