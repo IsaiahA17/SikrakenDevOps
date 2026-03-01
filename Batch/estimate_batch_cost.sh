@@ -2,6 +2,7 @@
 set -euo pipefail
 
 PARENT_JOB_ID="$1"
+JOB_QUEUE="$2"
 REGION="eu-west-1"
 
 echo "Calculating AWS Batch cost for parent job: $PARENT_JOB_ID"
