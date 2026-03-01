@@ -133,7 +133,6 @@ jobs:
           echo "Timestamp dir: $TIMESTAMP_DIR"
           SikrakenDevOps/ReportScripts/create_category_test_run_table.sh "$TIMESTAMP_DIR"
           echo "timestamp_dir=$TIMESTAMP_DIR" >> $GITHUB_OUTPUT
-        id: generate-report
 
       - name: Replace File Paths With S3 URLs
         run: |
