@@ -19,7 +19,9 @@ JOB_ID=$(aws batch submit-job \
     {name=BUDGET,value=$BUDGET},
     {name=MODE,value=$MODE},
     {name=TIMESTAMP,value=$TIMESTAMP}
-  ]"
+  ]" \
+  --query 'jobId' \
+  --output text
 )
 
 echo "$JOB_ID"
