@@ -15,6 +15,19 @@ JOB_ID=$(aws batch submit-job \
   --job-queue "$JOB_QUEUE" \
   --job-definition "$JOB_DEFINITION" \
   --array-properties size="$TASK_COUNT" \
+  --retry-strategy '{
+    "attempts": 5,
+    "evaluateOnExit": [
+      {
+        "onStatusReason": "Host EC2*terminated*",
+        "action": "RETRY"
+      },
+      {
+        "onReason": "*",
+        "action": "EXIT"
+      }
+    ]
+  }' \
   --container-overrides "environment=[
     {name=CATEGORY,value=$CATEGORY},
     {name=BUDGET,value=$BUDGET},
