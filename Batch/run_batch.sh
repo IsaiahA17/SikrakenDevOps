@@ -33,7 +33,8 @@ JOB_ID=$(aws batch submit-job \
     {name=BUDGET,value=$BUDGET},
     {name=MODE,value=$MODE},
     {name=TIMESTAMP,value=$TIMESTAMP},
-    {name=STACK_SIZE_GB,value=$STACK_SIZE_GB}
+    {name=STACK_SIZE_GB,value=$STACK_SIZE_GB},
+    {name=TASK_COUNT,value=$TASK_COUNT},
   ]" \
   --query 'jobId' \
   --output text

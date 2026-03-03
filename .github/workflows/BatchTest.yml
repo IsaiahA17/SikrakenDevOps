@@ -93,23 +93,3 @@ jobs:
             fi
             sleep 60
           done
-          
-  InvokeLambda:
-      environment: Batch
-      needs: [CheckoutRepositories]
-      runs-on: ubuntu-latest
-      steps:
-        - name: Configure AWS Credentials
-          uses: aws-actions/configure-aws-credentials@main 
-          with:
-            role-to-assume: ${{ secrets.EC2_ACCESS_ROLE_ARN }}
-            aws-region: eu-west-1
-            role-duration-seconds: 14400
-            
-        - name: Invoke Lambda Function For Processing
-          run: |
-            aws lambda invoke --function-name ${{ secrets.LAMBDA_NAME }} \
-            --cli-binary-format raw-in-base64-out \
-            --payload '{ "Category": "${{ vars.CATEGORY }}" }' response.json
-            URL=$(jq -r '.html_url' response.json) #Using the jq JSON command line processor to isolate the value of the url key
-            echo "$URL" | awk -F '?' '{print $1}' #Using the text processor awk to try and remove the unnecessary parts of the html url
