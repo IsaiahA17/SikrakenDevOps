@@ -54,7 +54,7 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build, tag, and push docker image to Amazon ECR
-        id: build-image
+        id: build-sikraken-image
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPOSITORY: sikraken/image-repo
@@ -62,7 +62,16 @@ jobs:
         run: |
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -f SikrakenDevOps/Dockerfiles/dockerfile SikrakenDevOps
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
-          echo "image=$REGISTRY/$REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+      
+      - name: Build, tag, and push report generation image to Amazon ECR
+        id: build-report-image
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: sikraken/image-repo
+          IMAGE_TAG: batch-report
+        run: |
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -f SikrakenDevOps/Dockerfiles/reports.dockerfile SikrakenDevOps --build-arg S3_BUCKET_NAME=${{ vars.S3_BUCKET_NAME }} --build-arg CATEGORY=${{ vars.CATEGORY }} 
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
 
       - name: Configure AWS Credentials For Batch
         uses: aws-actions/configure-aws-credentials@main 
