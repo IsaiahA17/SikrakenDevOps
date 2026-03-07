@@ -1,4 +1,4 @@
-s3_bucket="${2:-${S3_BUCKET:-ecs-benchmarks-output}}"
+s3_bucket="${2:-${S3_BUCKET_NAME:-ecs-benchmarks-output}}"
 CATEGORY="${2:-${CATEGORY:-ECA}}"
 
 aws s3 cp s3://$s3_bucket/$CATEGORY/ category_results/ --recursive
