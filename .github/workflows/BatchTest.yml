@@ -58,7 +58,7 @@ jobs:
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPOSITORY: sikraken/image-repo
-          IMAGE_TAG: ${{ secrets.IMAGE_TAG }}
+          IMAGE_TAG: batch-sikraken
         run: |
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -f SikrakenDevOps/Dockerfiles/dockerfile SikrakenDevOps
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
