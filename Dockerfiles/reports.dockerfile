@@ -13,8 +13,8 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o awscliv2.
     && ./aws/install \
     && rm -rf aws awscliv2.zip
 
-COPY SikrakenDevOps/ReportScripts /app/ReportScripts
-COPY SikrakenDevOps/SikrakenPythonScripts /app/SikrakenPythonScripts
+COPY ReportScripts /app/ReportScripts
+COPY SikrakenPythonScripts /app/SikrakenPythonScripts
 
 RUN chmod +x /app/ReportScripts/generate_reports.sh
 
