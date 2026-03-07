@@ -45,4 +45,3 @@ JOB_ID2=$(aws batch submit-job \
 )
 
 echo "$JOB_ID"
-echo "$JOB_ID2"
