@@ -60,7 +60,5 @@ jobs:
           REPOSITORY: sikraken/image-repo
           IMAGE_TAG: batch-report
         run: |
-          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -f SikrakenDevOps/Dockerfiles/reports.dockerfile SikrakenDevOps \
-          --build-arg S3_BUCKET_NAME={{ vars.S3_BUCKET_NAME }} \
-          --build-arg CATEGORY={{ vars.CATEGORY }} 
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -f SikrakenDevOps/Dockerfiles/reports.dockerfile SikrakenDevOps --build-arg S3_BUCKET_NAME={{ vars.S3_BUCKET_NAME }} --build-arg CATEGORY={{ vars.CATEGORY }} 
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
