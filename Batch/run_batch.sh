@@ -34,8 +34,7 @@ JOB_ID2=$(aws batch submit-job \
   --job-name "generate-report-${CATEGORY}-${TIMESTAMP}" \
   --job-queue "$JOB_QUEUE" \
   --job-definition "$REPORT_JOB_DEFINITION" \
-  --depends-on "[{jobId: $JOB_ID}]" \
-  --array-properties size="1" \
+  --depends-on "[{\"jobId\": \"$JOB_ID\"}]" \
   --retry-strategy '{"attempts": 5}' \
   --container-overrides "environment=[
     {name=CATEGORY,value=$CATEGORY},
