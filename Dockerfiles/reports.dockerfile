@@ -18,6 +18,7 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o awscliv2.
 COPY ReportScripts /app/ReportScripts
 COPY SikrakenPythonScripts /app/SikrakenPythonScripts
 
-RUN chmod +x /app/ReportScripts/generate_reports.sh
+RUN chmod +x /app/ReportScripts/*
+RUN chmod +x /app/SikrakenPythonScripts/*
 
 ENTRYPOINT ["/app/ReportScripts/generate_reports.sh"]
