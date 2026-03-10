@@ -39,7 +39,6 @@ jobs:
           repository: echancrure/SikrakenDevSpace
           token: ${{ secrets.PAT }}
           path: SikrakenDevOps/SikrakenDevSpace
-          ref: Batch
           sparse-checkout: |
             bin/helper
           sparse-checkout-cone-mode: false
