@@ -20,3 +20,4 @@ aws s3 cp "$TIMESTAMP_DIR/category_test_run_results.html" "s3://$s3_bucket/$CATE
 
 ls -l category_results/
 /app/ReportScripts/view_category_compare.sh category_results/$CATEGORY
+aws s3 cp "$category_results/$CATEGORY/results_summary.html" "s3://$s3_bucket/$CATEGORY/results_summary.html" --content-type text/html
