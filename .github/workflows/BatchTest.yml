@@ -32,6 +32,16 @@ jobs:
           repository: IsaiahA17/Sikraken
           path: SikrakenDevOps/sikraken
           ref: Batch
+
+      - name: Checkout Helper Directory In SikrakenDevSpace Repo
+        uses: actions/checkout@v6
+        with:
+          repository: echancrure/SikrakenDevSpace
+          token: ${{ secrets.PAT }}
+          path: SikrakenDevOps/SikrakenDevSpace
+          sparse-checkout: |
+            bin/helper
+          sparse-checkout-cone-mode: false
       
       - name: Init PTC-Solver
         run: |
