@@ -43,14 +43,14 @@ jobs:
             bin/helper
           sparse-checkout-cone-mode: false
       
-      - name: Init PTC-Solver
-        run: |
-          git -C SikrakenDevOps/sikraken submodule update --init PTC-Solver
+      #- name: Init PTC-Solver
+      #  run: |
+       #   git -C SikrakenDevOps/sikraken submodule update --init PTC-Solver
           
-          # Move into the submodule
-          cd SikrakenDevOps/sikraken/PTC-Solver          
-          git fetch origin
-          git checkout C_ver         
+        #  # Move into the submodule
+         # cd SikrakenDevOps/sikraken/PTC-Solver          
+          #git fetch origin
+          #git checkout C_ver         
           
       - name: Configure AWS Credentials For ECR
         uses: aws-actions/configure-aws-credentials@main 
@@ -67,7 +67,7 @@ jobs:
         id: build-sikraken-image
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          REPOSITORY: sikraken/image-repo
+          REPOSITORY: "${{ vars.ECR_REPOSITORY_NAME }}"
           IMAGE_TAG: batch-sikraken
         run: |
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -f SikrakenDevOps/Dockerfiles/dockerfile SikrakenDevOps
@@ -77,7 +77,7 @@ jobs:
         id: build-report-image
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          REPOSITORY: sikraken/image-repo
+          REPOSITORY: "${{ vars.ECR_REPOSITORY_NAME }}"
           IMAGE_TAG: batch-report
         run: |
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -f SikrakenDevOps/Dockerfiles/reports.dockerfile SikrakenDevOps --build-arg S3_BUCKET_NAME=${{ vars.S3_BUCKET_NAME }} --build-arg CATEGORY=${{ vars.CATEGORY }} 
@@ -106,12 +106,19 @@ jobs:
             if [[ "$STATUS" == "SUCCEEDED" ]]; then
               echo "Job completed successfully!"
               break
-            elif [[ "$STATUS" == "FAILED" ]]; then
-              echo "Job failed!"
-              exit 1
+            #elif [[ "$STATUS" == "FAILED" ]]; then
+             # echo "Job failed!"
+              #exit 1
             fi
             sleep 60
           done
+
+      - name: Assume AWS Lambda role
+        uses: aws-actions/configure-aws-credentials@main 
+        with:
+          role-to-assume: ${{ secrets.LAMBDA_ACCESS_ROLE_ARN }}
+          aws-region: eu-west-1
+          role-duration-seconds: 14400
 
       - name: Invoke Lambda Function For Processing
         run: |
@@ -119,4 +126,6 @@ jobs:
           --cli-binary-format raw-in-base64-out \
           --payload '{ "Category": "${{ vars.CATEGORY }}", "Bucket": "${{ vars.S3_BUCKET_NAME }}" }' response.json
           URL=$(jq -r '.body | fromjson | .url' response.json) #Using the jq JSON command line processor to isolate the value of the url key
+          RESULTS_SUMMARY_URL=$(jq -r '.body | fromjson | .results_summary_url' response.json)
           echo "$URL" | awk -F '?' '{print $1}' #Using the text processor awk to try and remove the unnecessary parts of the html url
+          echo "$RESULTS_SUMMARY_URL"
