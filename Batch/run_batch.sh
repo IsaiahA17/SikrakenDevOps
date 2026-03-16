@@ -9,8 +9,8 @@ BUDGET="${5:-${BUDGET:-10}}"
 MODE="${6:-${MODE:-release}}"
 STACK_SIZE_GB="${7:-${STACK_SIZE_GB:-3072}}"
 S3_BUCKET_NAME="${8:-${S3_BUCKET_NAME:-ecs-benchmarks-output}}"
-TESTCOMP_S3_BUCKET_NAME="${8:-${TESTCOMP_S3_BUCKET_NAME:-testcomp-benchmarks}}"
-REPORT_JOB_DEFINITION="${9:-${REPORT_JOB_DEFINITION:-generate-report}}"
+TESTCOMP_S3_BUCKET_NAME="${9:-${TESTCOMP_S3_BUCKET_NAME:-testcomp-benchmarks}}"
+REPORT_JOB_DEFINITION="${10:-${REPORT_JOB_DEFINITION:-generate-report}}"
 TIMESTAMP=$(date -u +"%Y_%m_%d_%H_%M")
 
 JOB_ID=$(aws batch submit-job \
