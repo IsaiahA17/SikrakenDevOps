@@ -26,7 +26,8 @@ JOB_ID=$(aws batch submit-job \
     {name=TIMESTAMP,value=$TIMESTAMP},
     {name=STACK_SIZE_GB,value=$STACK_SIZE_GB},
     {name=TASK_COUNT,value=$TASK_COUNT},
-    {name=S3_BUCKET_NAME,value=$S3_BUCKET_NAME}
+    {name=S3_BUCKET_NAME,value=$S3_BUCKET_NAME},
+    {name=TESTCOMP_S3_BUCKET_NAME,value=$TESTCOMP_S3_BUCKET_NAME}
   ]" \
   --query 'jobId' \
   --output text
