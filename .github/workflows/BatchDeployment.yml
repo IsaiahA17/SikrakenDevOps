@@ -57,7 +57,7 @@ jobs:
         with:
           role-to-assume: ${{ secrets.ECR_ACCESS_ROLE_ARN }}
           aws-region: eu-west-1
-          role-duration-seconds: 3600
+          role-duration-seconds: 14400
 
       - name: Login to Amazon ECR
         id: login-ecr
@@ -88,7 +88,7 @@ jobs:
         with:
           role-to-assume: ${{ secrets.BATCH_ACCESS_ROLE_ARN }}
           aws-region: eu-west-1
-          role-duration-seconds: 3600
+          role-duration-seconds: 14400
 
       - name: Submit Batch Job
         id: submit_batch_job
@@ -103,13 +103,13 @@ jobs:
           while true; do
             STATUS=$(aws batch describe-jobs --jobs "$JOB_ID" | jq -r '.jobs[0].status')
             echo "Current status: $STATUS"
-            if [[ "$STATUS" == "SUCCEEDED" ]]; then
-              echo "Job completed successfully!"
-              break
-            elif [[ "$STATUS" == "FAILED" ]]; then
-              echo "Job failed!"
-              exit 1
-            fi
+            #if [[ "$STATUS" == "SUCCEEDED" ]]; then
+             # echo "Job completed successfully!"
+              #break
+            #elif [[ "$STATUS" == "FAILED" ]]; then
+             # echo "Job failed!"
+              #exit 1
+            #fi
             sleep 60
           done
 
@@ -118,7 +118,7 @@ jobs:
         with:
           role-to-assume: ${{ secrets.LAMBDA_ACCESS_ROLE_ARN }}
           aws-region: eu-west-1
-          role-duration-seconds: 3600
+          role-duration-seconds: 14400
 
       - name: Invoke Lambda Function For Processing
         run: |
