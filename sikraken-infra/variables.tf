@@ -25,12 +25,6 @@ variable "github_environment" {
   type        = string
 }
 
-variable "use_placeholder_image" { 
-  description = "Set to true on first deployment before images have been pushed"
-  type        = bool
-  default     = true
-}
-
 variable "default_benchmark_category" {
   description = "Default benchmark category to run (e.g. ECA, chris)"
   type        = string
