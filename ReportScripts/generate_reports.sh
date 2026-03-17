@@ -22,4 +22,4 @@ ls -l category_results/
 ls -l category_results/$CATEGORY
 /app/ReportScripts/view_category_compare.sh category_results/$CATEGORY
 python3 /app/SikrakenPythonScripts/container_results_summary_processor.py /app/category_results/$CATEGORY/results_summary.html
-aws s3 cp "./$CATEGORY/results_summary.html" "s3://$s3_bucket/$CATEGORY/results_summary.html" --content-type text/html
+aws s3 cp "/app/category_results/$CATEGORY/results_summary.html" "s3://$s3_bucket/$CATEGORY/results_summary.html" --content-type text/html
