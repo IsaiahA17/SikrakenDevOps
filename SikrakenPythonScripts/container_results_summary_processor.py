@@ -12,6 +12,9 @@ def fix_s3_paths(input_path: str, output_path: str) -> None:
 
     fixed_content = content.replace(PREFIX, "/")
 
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write(fixed_content)
+
     print(f"Output written to: {output_path}")
 
 
