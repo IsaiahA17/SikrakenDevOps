@@ -19,5 +19,7 @@ python3 /app/SikrakenPythonScripts/filepath_to_url_processor.py "$TIMESTAMP_DIR"
 aws s3 cp "$TIMESTAMP_DIR/category_test_run_results.html" "s3://$s3_bucket/$CATEGORY/$TIMESTAMP_NAME/category_test_run_results.html" --content-type text/html
 
 ls -l category_results/
+ls -l category_results/$CATEGORY
 /app/ReportScripts/view_category_compare.sh category_results/$CATEGORY
 aws s3 cp "/app/category_results/$CATEGORY/results_summary.html" "s3://$s3_bucket/$CATEGORY/results_summary.html" --content-type text/html
+python3 /app/SikrakenPythonScripts/filepath_to_url_processor.py /app/category_results/$CATEGORY/results_summary.html
