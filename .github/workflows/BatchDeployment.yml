@@ -49,7 +49,7 @@ jobs:
           repository: echancrure/PTC-Solver
           token: ${{ secrets.PAT }}
           path: SikrakenDevOps/sikraken/PTC-Solver
-          ref: C-ver
+          ref: C_ver
           
       - name: Configure AWS Credentials For ECR
         uses: aws-actions/configure-aws-credentials@main 
