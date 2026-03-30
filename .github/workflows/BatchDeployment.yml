@@ -36,12 +36,13 @@ jobs:
       - name: Checkout Helper Directory In SikrakenDevSpace Repo
         uses: actions/checkout@v6
         with:
-          repository: echancrure/SikrakenDevSpace
+          repository: IsaiahA17/SikrakenDevSpace
           token: ${{ secrets.PAT }}
           path: SikrakenDevOps/SikrakenDevSpace
           sparse-checkout: |
             bin/helper
           sparse-checkout-cone-mode: false
+          ref: Compare-Runs-S3-Compatibility
       
       - name: Checkout PTC-Solver Repo
         uses: actions/checkout@v6
