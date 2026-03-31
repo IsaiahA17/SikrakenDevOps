@@ -355,7 +355,7 @@ copy_i_files_to_corresponding_folders(){
 	echo "Copying .i files..."
 	for d in "$output_dir"/*/; do
 	    name=$(basename "$d")
-	    src_file="$$SIKRAKEN_INSTALL_DIR/sikraken_output/$name/$name.i"
+	    src_file="$SIKRAKEN_INSTALL_DIR/sikraken_output/$name/$name.i"
 	    if [[ -f "$src_file" ]]; then
 		cp "$src_file" "$d"
 		echo "Copied $src_file → $d"
