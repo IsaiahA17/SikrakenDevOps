@@ -36,21 +36,21 @@ jobs:
       - name: Checkout Helper Directory In SikrakenDevSpace Repo
         uses: actions/checkout@v6
         with:
-          repository: echancrure/SikrakenDevSpace
+          repository: IsaiahA17/SikrakenDevSpace
           token: ${{ secrets.PAT }}
           path: SikrakenDevOps/SikrakenDevSpace
           sparse-checkout: |
             bin/helper
           sparse-checkout-cone-mode: false
+          ref: Compare-Runs-S3-Compatibility
       
-      #- name: Init PTC-Solver
-      #  run: |
-       #   git -C SikrakenDevOps/sikraken submodule update --init PTC-Solver
-          
-        #  # Move into the submodule
-         # cd SikrakenDevOps/sikraken/PTC-Solver          
-          #git fetch origin
-          #git checkout C_ver         
+      - name: Checkout PTC-Solver Repo
+        uses: actions/checkout@v6
+        with:
+          repository: echancrure/PTC-Solver
+          token: ${{ secrets.PAT }}
+          path: SikrakenDevOps/sikraken/PTC-Solver
+          ref: C_ver
           
       - name: Configure AWS Credentials For ECR
         uses: aws-actions/configure-aws-credentials@main 
