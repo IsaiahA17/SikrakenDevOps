@@ -138,7 +138,7 @@ retrieve_category_file(){
     if [ $category == "ECA" ]; then
         exclude_set="$SCRIPT_DIR/../ECA-excludes.set"   # local copy, actual exclude file (only category for which there is one) is at https://gitlab.com/sosy-lab/test-comp/bench-defs/-/tree/testcomp25/benchmark-defs/excludes?ref_type=tags 
         if [ ! -f "$exclude_set" ]; then
-            echo "Sikraken ERROR from $script_name: Exclusion set $exclude_set does not exist."
+            echo "Sikraken ERROR from $script_name: Exclusion set $exclude_set does not exist." 
             exit 1
         fi
         echo "Sikraken $script_name log: Using the exclude set: "$exclude_set""
@@ -350,14 +350,21 @@ run_benchmark(){
 }
 
 run_benchmark
-#generate_table_script="$SIKRAKEN_INSTALL_DIR/SikrakenDevSpace/bin/helper/create_category_test_run_table.sh $output_dir"
-#echo "Sikraken $script_name: now calling $generate_table_script"
-#$generate_table_script
 
-# update the overall category summary table for all the previous runs
-#generate_summary="$SIKRAKEN_INSTALL_DIR/SikrakenDevSpace/bin/helper/view_category_compare.sh ./SikrakenDevSpace/categories/$category/"
-#echo "Sikraken $script_name log: now calling $generate_summary"
-#$generate_summary
+copy_i_files_to_corresponding_folders(){
+	echo "Copying .i files..."
+	for d in "$output_dir"/*/; do
+	    name=$(basename "$d")
+	    src_file="$$SIKRAKEN_INSTALL_DIR/sikraken_output/$name/$name.i"
+	    if [[ -f "$src_file" ]]; then
+		cp "$src_file" "$d"
+		echo "Copied $src_file → $d"
+	    else
+		echo "Missing: $src_file"
+	    fi
+	done
+}
+copy_i_files_to_corresponding_folders
 
 upload_benchmark_to_s3(){
     S3_PREFIX="s3://${S3_BUCKET}/${CATEGORY}/${TIMESTAMP}"
