@@ -11,6 +11,7 @@ STACK_SIZE_GB="${7:-${STACK_SIZE_GB:-3}}"
 S3_BUCKET_NAME="${8:-${S3_BUCKET_NAME:-ecs-benchmarks-output}}"
 TESTCOMP_S3_BUCKET_NAME="${9:-${TESTCOMP_S3_BUCKET_NAME:-testcomp-benchmarks}}"
 REPORT_JOB_DEFINITION="${10:-${REPORT_JOB_DEFINITION:-generate-report}}"
+BRANCH_HIGHLIGHTING="${11:-${BRANCH_HIGHLIGHTING:-0}}"
 TIMESTAMP=$(date -u +"%Y_%m_%d_%H_%M")
 
 JOB_ID=$(aws batch submit-job \
@@ -29,7 +30,8 @@ JOB_ID=$(aws batch submit-job \
     {name=STACK_SIZE_GB,value=$STACK_SIZE_GB},
     {name=JOB_COUNT,value=$JOB_COUNT},
     {name=S3_BUCKET_NAME,value=$S3_BUCKET_NAME},
-    {name=TESTCOMP_S3_BUCKET_NAME,value=$TESTCOMP_S3_BUCKET_NAME}
+    {name=TESTCOMP_S3_BUCKET_NAME,value=$TESTCOMP_S3_BUCKET_NAME},
+    {name=BRANCH_HIGHLIGHTING,value=$BRANCH_HIGHLIGHTING}
   ]" \
   --query 'jobId' \
   --output text

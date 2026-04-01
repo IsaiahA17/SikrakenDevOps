@@ -29,6 +29,7 @@ STACK_SIZE_GB="${STACK_SIZE_GB:-3}"
 CATEGORY="${CATEGORY:-chris}"
 MODE="${MODE:-release}"
 BUDGET="${BUDGET:-10}"
+BRANCH_HIGHLIGHTING="${BRANCH_HIGHLIGHTING:-0}"
 TIMESTAMP="${TIMESTAMP:?TIMESTAMP environment variable not set}"
 
 #Using Batch environment variables 
@@ -58,7 +59,7 @@ mode=$MODE
 shortcutgen=""
 shortcutgen_flag=0
 no_testcov=1 #Setting To 1 as no testcov usage yet in Batch version
-branch_highlight=1
+branch_highlight=$BRANCH_HIGHLIGHTING
 stack_size_gb=$STACK_SIZE_GB
 
 # --- Process Optional Arguments (Shift and Loop) ---
@@ -70,9 +71,6 @@ if [ $# -gt 0 ]; then
             "-scg")
                 shortcutgen=", shortcut_gen"
                 shortcutgen_flag=1
-                ;;
-            "-bh")
-                branch_highlight=1
                 ;;
             *)
                 # Handle unknown options
