@@ -32,8 +32,8 @@ BUDGET="${BUDGET:-10}"
 TIMESTAMP="${TIMESTAMP:?TIMESTAMP environment variable not set}"
 
 #Using Batch environment variables 
-TASK_COUNT="${TASK_COUNT:-1}"   
-TASK_INDEX="${AWS_BATCH_JOB_ARRAY_INDEX:-0}"   
+JOB_COUNT="${JOB_COUNT:-1}"   
+JOB_INDEX="${AWS_BATCH_JOB_ARRAY_INDEX:-0}"   
 OUTPUT_SHARED="/output"
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)" 
@@ -92,8 +92,8 @@ echo "category           = $category"
 echo "budget             = $budget"
 echo "mode               = $mode"
 echo "shortcutgen        = $shortcutgen"
-echo "task_index         = $TASK_INDEX"
-echo "task_count         = $TASK_COUNT"
+echo "job_index         = $JOB_INDEX"
+echo "job_count         = $JOB_COUNT"
 echo "stack_size         = $stack_size_gb"
 
 check_benchmarks_path(){
@@ -213,7 +213,7 @@ generate_tests() {
 start_wall_time=$(date +"%Y-%m-%d %H:%M:%S")    # Capture human-readable time and Unix timestamp for start
 start_ts=$(date +%s)
 mkdir -p "$output_dir/benchmark_files"
-category_extracted_benchmarks_files="$output_dir"/benchmark_files/benchmark_files-$TASK_INDEX.txt  #output list of benchmarks for the category
+category_extracted_benchmarks_files="$output_dir"/benchmark_files/benchmark_files-$JOB_INDEX.txt  #output list of benchmarks for the category
 log_file="$output_dir"/category_test_run.log
 
 #printf -v orig_cmd '%q ' "${ORIG_ARGV[@]}"
@@ -239,7 +239,7 @@ download_assigned_benchmarks() {
     mkdir -p "$path_to_benchmarks"
 
     for i in "${!PATTERNS[@]}"; do
-        if (( i % TASK_COUNT != TASK_INDEX )); then
+        if (( i % JOB_COUNT != JOB_INDEX )); then
             continue
         fi
 
@@ -284,7 +284,7 @@ download_assigned_benchmarks
 
 run_benchmark(){
     for i in "${!PATTERNS[@]}"; do
-        if (( i % TASK_COUNT != TASK_INDEX )); then
+        if (( i % JOB_COUNT != JOB_INDEX )); then
             continue
         fi
 

@@ -3,7 +3,7 @@ set -euo pipefail
 
 JOB_QUEUE="${1:-${JOB_QUEUE:-sikraken-test-comp-job-queue}}"
 SIKRAKEN_JOB_DEFINITION="${2:-${SIKRAKEN_JOB_DEFINITION:-sikraken-test-comp-batch-job-def}}"
-TASK_COUNT="${3:-${TASK_COUNT:-5}}"
+JOB_COUNT="${3:-${JOB_COUNT:-5}}"
 CATEGORY="${4:-${CATEGORY:-chris}}"
 BUDGET="${5:-${BUDGET:-10}}"
 MODE="${6:-${MODE:-release}}"
@@ -17,7 +17,7 @@ JOB_ID=$(aws batch submit-job \
   --job-name "sikraken-${CATEGORY}-${TIMESTAMP}" \
   --job-queue "$JOB_QUEUE" \
   --job-definition "$SIKRAKEN_JOB_DEFINITION" \
-  --array-properties size="$TASK_COUNT" \
+  --array-properties size="$JOB_COUNT" \
   --retry-strategy '{"attempts": 5}' \
   --container-overrides "resourceRequirements=[
     {type=MEMORY,value=$(($STACK_SIZE_GB * 1024))}
@@ -27,7 +27,7 @@ JOB_ID=$(aws batch submit-job \
     {name=MODE,value=$MODE},
     {name=TIMESTAMP,value=$TIMESTAMP},
     {name=STACK_SIZE_GB,value=$STACK_SIZE_GB},
-    {name=TASK_COUNT,value=$TASK_COUNT},
+    {name=JOB_COUNT,value=$JOB_COUNT},
     {name=S3_BUCKET_NAME,value=$S3_BUCKET_NAME},
     {name=TESTCOMP_S3_BUCKET_NAME,value=$TESTCOMP_S3_BUCKET_NAME}
   ]" \
