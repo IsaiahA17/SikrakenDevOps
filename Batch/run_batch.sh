@@ -7,7 +7,7 @@ TASK_COUNT="${3:-${TASK_COUNT:-5}}"
 CATEGORY="${4:-${CATEGORY:-chris}}"
 BUDGET="${5:-${BUDGET:-10}}"
 MODE="${6:-${MODE:-release}}"
-STACK_SIZE_GB="${7:-${STACK_SIZE_GB:-3072}}"
+STACK_SIZE_GB="${7:-${STACK_SIZE_GB:-3}}"
 S3_BUCKET_NAME="${8:-${S3_BUCKET_NAME:-ecs-benchmarks-output}}"
 TESTCOMP_S3_BUCKET_NAME="${9:-${TESTCOMP_S3_BUCKET_NAME:-testcomp-benchmarks}}"
 REPORT_JOB_DEFINITION="${10:-${REPORT_JOB_DEFINITION:-generate-report}}"
@@ -19,7 +19,9 @@ JOB_ID=$(aws batch submit-job \
   --job-definition "$SIKRAKEN_JOB_DEFINITION" \
   --array-properties size="$TASK_COUNT" \
   --retry-strategy '{"attempts": 5}' \
-  --container-overrides "environment=[
+  --container-overrides "resourceRequirements=[
+    {type=MEMORY,value=$(($STACK_SIZE_GB * 1024))}
+  ],environment=[
     {name=CATEGORY,value=$CATEGORY},
     {name=BUDGET,value=$BUDGET},
     {name=MODE,value=$MODE},

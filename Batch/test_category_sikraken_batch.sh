@@ -25,7 +25,7 @@ S3_BUCKET="${S3_BUCKET_NAME:?S3_BUCKET not set}"
 TESTCOMP_S3_BUCKET_NAME="${TESTCOMP_S3_BUCKET_NAME:-testcomp-benchmarks}"
 TESTCOMP_BUCKET="${TESTCOMP_S3_BUCKET_NAME:?TESTCOMP_S3_BUCKET_NAME not set}"
 CORES="${CORES:-1}"
-STACK_SIZE_GB="${STACK_SIZE_GB:-3072}"
+STACK_SIZE_GB="${STACK_SIZE_GB:-3}"
 CATEGORY="${CATEGORY:-chris}"
 MODE="${MODE:-release}"
 BUDGET="${BUDGET:-10}"
@@ -59,7 +59,7 @@ shortcutgen=""
 shortcutgen_flag=0
 no_testcov=1 #Setting To 1 as no testcov usage yet in Batch version
 branch_highlight=1
-stack_size_gb=$((STACK_SIZE_GB / 1024))
+stack_size_gb=$STACK_SIZE_GB
 
 # --- Process Optional Arguments (Shift and Loop) ---
 if [ $# -gt 0 ]; then
