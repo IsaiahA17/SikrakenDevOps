@@ -4,8 +4,8 @@
 # Author: Chris Meudec
 # Modified By: Isaiah Andres
 # Started: May 2025 (Major update: Oct 2025 for parallel error handling)
-# Modified On: Feb 2026
-# Description: This is a modified version of an existing script test_category_sikraken.sh to be single threaded so that it may work in an ECS Fargate cluster.
+# Modified On: March 2026
+# Description: This is a modified version of an existing script test_category_sikraken.sh to be single threaded so that it may work in an AWS Batch job.
 #              Most features and options have been removed by commenting them out as the focus for now is on measuring the performance but have been kept 
 #              in case further development may be necessary, so comments explaining other features have been removed until added again.
 # The <category>.set file are in sv-benchmarks/c directory or can be user-defined
@@ -57,8 +57,8 @@ mode=$MODE
 # --- Initialize Optional Variables ---
 shortcutgen=""
 shortcutgen_flag=0
-no_testcov=1 #Setting To 1 as no testcov usage yet in ECS version
-branch_highlight=0
+no_testcov=1 #Setting To 1 as no testcov usage yet in Batch version
+branch_highlight=1
 stack_size_gb=$((STACK_SIZE_GB / 1024))
 
 # --- Process Optional Arguments (Shift and Loop) ---
@@ -71,15 +71,8 @@ if [ $# -gt 0 ]; then
                 shortcutgen=", shortcut_gen"
                 shortcutgen_flag=1
                 ;;
-            "-no_testcov")
-                no_testcov=1
-                ;;
             "-bh")
                 branch_highlight=1
-                ;;
-            --ss=*)
-                # 1. Extract the value after the '=' sign
-                stack_size_gb="${1#*=}"
                 ;;
             *)
                 # Handle unknown options
@@ -96,11 +89,9 @@ fi
 # --- Debug info ---
 echo "path_to_benchmarks = $path_to_benchmarks"
 echo "category           = $category"
-echo "cores              = $cores"
 echo "budget             = $budget"
 echo "mode               = $mode"
 echo "shortcutgen        = $shortcutgen"
-echo "no_testcov         = $no_testcov"
 echo "task_index         = $TASK_INDEX"
 echo "task_count         = $TASK_COUNT"
 echo "stack_size         = $stack_size_gb"
@@ -204,7 +195,7 @@ generate_tests() {
         echo -e "${YL}Skipping coverage branches highlighting${NC}"
     fi
 
-    if (( no_testcov == 1 )); then
+    if (( no_testcov == 1 )); then     #No TestCov support for Batch, removed debug message for it but keeping this line 
         echo -e "${YL}Skipping TestCov: relying on Sikraken coverage${NC}"
     else
         testcov_call="$SIKRAKEN_INSTALL_DIR/bin/run_testcov.sh"   # program
