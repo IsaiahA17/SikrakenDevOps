@@ -17,6 +17,7 @@ COPY sikraken /app/sikraken
 #COPY . /app/sikraken
 COPY Batch/test_category_sikraken_batch.sh /app/sikraken/bin/test_category_sikraken_batch.sh
 COPY SikrakenDevSpace/bin/helper/highlight_branches.sh /app/sikraken/SikrakenDevSpace/bin/helper/highlight_branches.sh
+COPY SikrakenDevSpace/categories /app/sikraken/categories
 
 WORKDIR /app/sikraken/eclipse
 RUN wget https://eclipseclp.org/Distribution/Builds/7.1_13/x86_64_linux/eclipse_basic.tgz \
