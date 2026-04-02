@@ -43,7 +43,7 @@ jobs:
             bin/helper
             categories/*.set
           sparse-checkout-cone-mode: false
-          ref: Compare-Runs-S3-Compatibility
+          ref: Compare-Runs-S3-File-Compatibility
       
       - name: Checkout PTC-Solver Repo
         uses: actions/checkout@v6
