@@ -7,13 +7,13 @@ find_latest_benchmark(){
     aws s3 cp s3://$s3_bucket/$CATEGORY/ category_results/$CATEGORY --recursive
     TIMESTAMP_DIR=$(find category_results/$CATEGORY -mindepth 1 -maxdepth 1 -type d -regextype posix-extended -regex ".*/[0-9]{4}_[0-9]{2}_[0-9]{2}_[0-9]{2}_[0-9]{2}" | sort | tail -n1)
 }
-find_latest_benchmark()
+find_latest_benchmark
 
 combine_benchmark_files(){
     touch $TIMESTAMP_DIR/benchmark_files.txt
     cat $TIMESTAMP_DIR/benchmark_files/* > $TIMESTAMP_DIR/benchmark_files.txt
 }
-combine_benchmark_files()
+combine_benchmark_files
 
 generate_and_upload_reports(){
     /app/ReportScripts/create_category_test_run_table.sh "$TIMESTAMP_DIR"
@@ -26,4 +26,4 @@ generate_and_upload_reports(){
     python3 /app/SikrakenPythonScripts/container_results_summary_processor.py /app/category_results/$CATEGORY/results_summary.html
     aws s3 cp "/app/category_results/$CATEGORY/results_summary.html" "s3://$s3_bucket/$CATEGORY/results_summary.html" --content-type text/html
 }
-generate_and_upload_reports()
+generate_and_upload_reports
