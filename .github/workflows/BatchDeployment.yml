@@ -41,7 +41,7 @@ jobs:
           path: SikrakenDevOps/SikrakenDevSpace
           sparse-checkout: |
             bin/helper
-            categories
+            categories/*.set
           sparse-checkout-cone-mode: false
           ref: Compare-Runs-S3-Compatibility
       
