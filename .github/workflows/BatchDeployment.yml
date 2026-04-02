@@ -107,9 +107,9 @@ jobs:
             if [[ "$STATUS" == "SUCCEEDED" ]]; then
               echo "Job completed successfully!"
               break
-            #elif [[ "$STATUS" == "FAILED" ]]; then
-             # echo "Job failed!"
-              #exit 1
+            elif [[ "$STATUS" == "FAILED" ]]; then
+              echo "Job failed!"
+              exit 1
             fi
             sleep 60
           done
