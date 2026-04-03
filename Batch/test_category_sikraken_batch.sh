@@ -231,6 +231,7 @@ retrieve_all_yml_files() {
 
 retrieve_all_yml_files
 
+ASSIGNED_PATTERNS=()
 download_assigned_benchmarks() {
     TESTCOMP_BUCKET_PREFIX="c"
 
@@ -242,6 +243,7 @@ download_assigned_benchmarks() {
         fi
 
         rel_path="${PATTERNS[$i]}"
+        ASSIGNED_PATTERNS+=("${PATTERNS[$i]}")
         dir_name="$(dirname "$rel_path")"
         local_yml_path="$path_to_benchmarks/$rel_path"
 
@@ -281,12 +283,9 @@ download_assigned_benchmarks() {
 download_assigned_benchmarks
 
 run_benchmark(){
-    for i in "${!PATTERNS[@]}"; do
-        if (( i % JOB_COUNT != JOB_INDEX )); then
-            continue
-        fi
+    for rel_path in "${ASSIGNED_PATTERNS[@]}"; do
 
-        pattern_benchmark_directory="${PATTERNS[$i]}"
+        pattern_benchmark_directory=$rel_path
 
         for yml_file in "$path_to_benchmarks"/$pattern_benchmark_directory; do
             # Exclude files listed in the exclusion set
