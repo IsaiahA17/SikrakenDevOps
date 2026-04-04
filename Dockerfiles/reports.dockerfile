@@ -4,8 +4,6 @@ WORKDIR /app
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y \
     wget curl unzip gcc ca-certificates \
-    libncurses-dev libstdc++6 \
-    flex bison \
     python3 \
     bc \
     && rm -rf /var/lib/apt/lists/*
