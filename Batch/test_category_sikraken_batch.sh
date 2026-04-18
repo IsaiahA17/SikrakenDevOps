@@ -106,6 +106,7 @@ check_benchmarks_path
 retrieve_category_file(){
     category_file="$category".set   #input file describing the category
     local_category_path="$SIKRAKEN_INSTALL_DIR/categories/"
+    ls "$local_category_path"
     # 1. Check local directory (e.g. for non-Test-Comp sets such as chris.set)
     full_path_to_category_file="$local_category_path/$category_file"
     if [ -f "$full_path_to_category_file" ]; then
