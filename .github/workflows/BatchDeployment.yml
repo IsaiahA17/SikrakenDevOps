@@ -96,6 +96,14 @@ jobs:
           aws-region: eu-west-1
           role-duration-seconds: 14400
 
+      - name: Checkout Current Repo
+        uses: actions/checkout@v6
+        with:
+          repository: IsaiahA17/SikrakenDevOps
+          path: SikrakenDevOps
+          sparse-checkout: |
+            Batch
+
       - name: Submit Batch Job
         id: submit_batch_job
         run: |
