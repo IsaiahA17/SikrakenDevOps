@@ -83,7 +83,11 @@ jobs:
         run: |
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -f SikrakenDevOps/Dockerfiles/reports.dockerfile SikrakenDevOps --build-arg S3_BUCKET_NAME=${{ vars.S3_BUCKET_NAME }} --build-arg CATEGORY=${{ vars.CATEGORY }} 
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
-
+          
+  SubmitBatchJob:
+    needs: CheckoutRepositories
+    runs-on: ubuntu-latest
+    steps:
       - name: Configure AWS Credentials For Batch
         uses: aws-actions/configure-aws-credentials@main 
         with:
@@ -113,7 +117,11 @@ jobs:
             fi
             sleep 60
           done
-
+          
+  OutputReports:
+    needs: [CheckoutRepositories, SubmitBatchJob]
+    runs-on: ubuntu-latest
+    steps:
       - name: Assume AWS Lambda role
         uses: aws-actions/configure-aws-credentials@main 
         with:
@@ -126,7 +134,9 @@ jobs:
           aws lambda invoke --function-name ${{ secrets.LAMBDA_NAME }} \
           --cli-binary-format raw-in-base64-out \
           --payload '{ "Category": "${{ vars.CATEGORY }}", "Bucket": "${{ vars.S3_BUCKET_NAME }}" }' response.json
+          
           URL=$(jq -r '.body | fromjson | .url' response.json) #Using the jq JSON command line processor to isolate the value of the url key
           RESULTS_SUMMARY_URL=$(jq -r '.body | fromjson | .results_summary_url' response.json)
+          
           echo "$URL" | awk -F '?' '{print $1}' #Using the text processor awk to try and remove the unnecessary parts of the html url
           echo "$RESULTS_SUMMARY_URL"
