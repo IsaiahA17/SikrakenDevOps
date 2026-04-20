@@ -96,13 +96,14 @@ jobs:
           aws-region: eu-west-1
           role-duration-seconds: 14400
 
-      - name: Checkout Current Repo
+      - name: Checkout Repo Batch Scripts
         uses: actions/checkout@v6
         with:
           repository: IsaiahA17/SikrakenDevOps
           path: SikrakenDevOps
           sparse-checkout: |
             Batch
+            PipelineScripts
 
       - name: Submit Batch Job
         id: submit_batch_job
@@ -113,19 +114,8 @@ jobs:
           
       - name: Wait For Job Completion
         run: |
-          JOB_ID="${{ steps.submit_batch_job.outputs.job_id }}"
-          while true; do
-            STATUS=$(aws batch describe-jobs --jobs "$JOB_ID" | jq -r '.jobs[0].status')
-            echo "Current status: $STATUS"
-            if [[ "$STATUS" == "SUCCEEDED" ]]; then
-              echo "Job completed successfully!"
-              break
-            elif [[ "$STATUS" == "FAILED" ]]; then
-              echo "Job failed!"
-              exit 1
-            fi
-            sleep 60
-          done
+          chmod +x SikrakenDevOps/PipelineScripts/WaitForJob.sh
+          SikrakenDevOps/PipelineScripts/WaitForJob.sh "${{ steps.submit_batch_job.outputs.job_id }}"
           
   OutputReports:
     needs: [CheckoutRepositories, SubmitBatchJob]
@@ -139,14 +129,15 @@ jobs:
           aws-region: eu-west-1
           role-duration-seconds: 14400
 
+      - name: Checkout Lambda Pipeline Script
+        uses: actions/checkout@v6
+        with:
+          repository: IsaiahA17/SikrakenDevOps
+          path: SikrakenDevOps
+          sparse-checkout: |
+            PipelineScripts/InvokeLambda.sh
+
       - name: Invoke Lambda Function For Processing
         run: |
-          aws lambda invoke --function-name ${{ secrets.LAMBDA_NAME }} \
-          --cli-binary-format raw-in-base64-out \
-          --payload '{ "Category": "${{ vars.CATEGORY }}", "Bucket": "${{ vars.S3_BUCKET_NAME }}" }' response.json
-          
-          URL=$(jq -r '.body | fromjson | .url' response.json) #Using the jq JSON command line processor to isolate the value of the url key
-          RESULTS_SUMMARY_URL=$(jq -r '.body | fromjson | .results_summary_url' response.json)
-          
-          echo "$URL" | awk -F '?' '{print $1}' #Using the text processor awk to try and remove the unnecessary parts of the html url
-          echo "$RESULTS_SUMMARY_URL"
+          chmod +x SikrakenDevOps/PipelineScripts/InvokeLambda.sh
+          SikrakenDevOps/PipelineScripts/InvokeLambda.sh "${{ secrets.LAMBDA_NAME }}" "${{ vars.CATEGORY }}" "${{ vars.S3_BUCKET_NAME }}"
