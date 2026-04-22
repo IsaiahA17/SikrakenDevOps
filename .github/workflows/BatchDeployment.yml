@@ -89,6 +89,12 @@ jobs:
     runs-on: ubuntu-latest
     environment: Batch
     steps:
+      - name: Checkout Current Repo
+        uses: actions/checkout@v6
+        with:
+          repository: IsaiahA17/SikrakenDevOps
+          path: SikrakenDevOps
+          
       - name: Configure AWS Credentials For Batch
         uses: aws-actions/configure-aws-credentials@main 
         with:
