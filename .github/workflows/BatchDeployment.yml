@@ -29,14 +29,15 @@ jobs:
       - name: Checkout Sikraken Repo
         uses: actions/checkout@v6
         with:
-          repository: IsaiahA17/Sikraken
+          repository: echancrure/Sikraken
+          token: ${{ secrets.PAT }}
           path: SikrakenDevOps/sikraken
           ref: Batch
 
       - name: Checkout Helper Directory In SikrakenDevSpace Repo
         uses: actions/checkout@v6
         with:
-          repository: IsaiahA17/SikrakenDevSpace
+          repository: echancrure/SikrakenDevSpace
           token: ${{ secrets.PAT }}
           path: SikrakenDevOps/SikrakenDevSpace
           sparse-checkout: |
