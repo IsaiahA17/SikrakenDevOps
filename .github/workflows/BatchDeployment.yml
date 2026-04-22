@@ -30,7 +30,6 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: echancrure/Sikraken
-          token: ${{ secrets.PAT }}
           path: SikrakenDevOps/sikraken
           ref: Batch
 
