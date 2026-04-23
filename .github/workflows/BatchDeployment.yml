@@ -44,7 +44,7 @@ jobs:
             bin/helper
             categories/*.set
           sparse-checkout-cone-mode: false
-          ref: main
+          ref: compare_runs_cloud_bug_fix
       
       - name: Checkout PTC-Solver Repo
         uses: actions/checkout@v6
